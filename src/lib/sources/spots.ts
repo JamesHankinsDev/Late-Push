@@ -8,14 +8,11 @@ export async function findSkateSpots(
   const query = `
     [out:json][timeout:25];
     (
-      node["leisure"="pitch"]["sport"="skateboard"](around:${radiusMeters},${lat},${lng});
-      way["leisure"="pitch"]["sport"="skateboard"](around:${radiusMeters},${lat},${lng});
-      node["leisure"="skatepark"](around:${radiusMeters},${lat},${lng});
-      way["leisure"="skatepark"](around:${radiusMeters},${lat},${lng});
-      node["sport"="skateboard"](around:${radiusMeters},${lat},${lng});
-      way["sport"="skateboard"](around:${radiusMeters},${lat},${lng});
+      nwr["leisure"="skatepark"](around:${radiusMeters},${lat},${lng});
+      nwr["sport"="skateboard"](around:${radiusMeters},${lat},${lng});
+      nwr["leisure"="pitch"]["sport"="skateboard"](around:${radiusMeters},${lat},${lng});
     );
-    out center body;
+    out center;
   `;
 
   const res = await fetch("https://overpass-api.de/api/interpreter", {
@@ -37,7 +34,14 @@ export async function findSkateSpots(
       if (!elLat || !elLng) return null;
 
       const tags = (el.tags ?? {}) as Record<string, string>;
-      const name = tags.name || tags["name:en"] || "Unnamed Skate Spot";
+      const baseName = tags.name
+        || tags["name:en"]
+        || tags.description
+        || (tags["addr:street"] ? `Spot on ${tags["addr:street"]}` : null)
+        || (tags.leisure === "skatepark" ? "Skatepark" : "Skate Spot");
+      const name = tags["addr:city"] && !baseName.includes(tags["addr:city"])
+        ? `${baseName} — ${tags["addr:city"]}`
+        : baseName;
       const surface = tags.surface || undefined;
 
       const distance = haversineDistance(lat, lng, elLat, elLng);
@@ -54,7 +58,7 @@ export async function findSkateSpots(
         surface,
         beginnerFriendly,
         tags: Object.entries(tags)
-          .filter(([k]) => ["surface", "lit", "access", "wheelchair"].includes(k))
+          .filter(([k]) => ["surface", "lit", "access", "wheelchair", "opening_hours", "fee", "operator", "website"].includes(k))
           .map(([k, v]) => `${k}: ${v}`),
       } as SkateSpot;
     })

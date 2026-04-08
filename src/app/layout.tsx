@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "GROWN & ROLLING — Skateboarding for Adults",
+  title: "Late Push — Skateboarding for Adults",
   description:
     "A structured skateboarding learning platform designed for adult beginners. Learn to skate with a curriculum, session logging, AI coaching, and spot finding.",
 };

@@ -57,9 +57,9 @@ export default function Home() {
         {/* Logo / Hero */}
         <div className="text-center mb-10">
           <h1 className="font-display text-5xl font-bold text-skate-lime tracking-tighter leading-none">
-            GROWN
+            LATE
             <br />
-            <span className="text-white">&amp; ROLLING</span>
+            <span className="text-white">PUSH</span>
           </h1>
           <p className="text-concrete-400 text-sm mt-3 max-w-xs mx-auto">
             Structured skateboarding for adults who have jobs, responsibilities,

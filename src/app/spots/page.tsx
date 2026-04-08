@@ -32,6 +32,7 @@ export default function SpotsPage() {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         });
+        setLoading(false);
       },
       () => {
         setError("Location access denied. Enable it to find spots near you.");

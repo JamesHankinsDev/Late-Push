@@ -25,7 +25,7 @@ export default function Nav() {
         <div className="p-4 border-b border-concrete-700">
           <Link href="/dashboard" className="block">
             <h1 className="font-display text-xl font-bold text-skate-lime tracking-tight">
-              GROWN &<br />ROLLING
+              LATE<br />PUSH
             </h1>
           </Link>
         </div>
