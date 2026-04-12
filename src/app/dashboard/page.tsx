@@ -86,7 +86,7 @@ export default function DashboardPage() {
     const injuredCount = recent.filter((s) => s.bodyFeel === "injured").length;
     if (injuredCount >= 2) return { label: "Take it easy", color: "text-skate-red", warning: true };
     if (soreCount >= 3) return { label: "Getting beat up", color: "text-skate-orange", warning: true };
-    if (soreCount >= 1) return { label: "Normal wear", color: "text-yellow-400", warning: false };
+    if (soreCount >= 1) return { label: "Normal wear", color: "text-skate-cyan", warning: false };
     return { label: "Feeling good", color: "text-skate-lime", warning: false };
   }, [sessions]);
 

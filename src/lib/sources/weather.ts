@@ -103,7 +103,7 @@ export function getSkateScoreLabel(score: number): string {
 
 export function getSkateScoreColor(score: number): string {
   if (score >= 80) return "text-skate-lime";
-  if (score >= 60) return "text-yellow-400";
+  if (score >= 60) return "text-skate-cyan";
   if (score >= 40) return "text-skate-orange";
   return "text-skate-red";
 }
