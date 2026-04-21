@@ -8,16 +8,27 @@ import { format } from "date-fns";
 interface SessionFormProps {
   onSubmit: (session: Omit<Session, "id" | "userId" | "createdAt" | "coachResponse">) => void;
   loading: boolean;
+  initialTricks?: string[];
+  initialWhatClicked?: string;
+  initialWhatDidnt?: string;
+  initialBodyFeel?: BodyFeel;
 }
 
-export default function SessionForm({ onSubmit, loading }: SessionFormProps) {
+export default function SessionForm({
+  onSubmit,
+  loading,
+  initialTricks = [],
+  initialWhatClicked = "",
+  initialWhatDidnt = "",
+  initialBodyFeel = "fine",
+}: SessionFormProps) {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [duration, setDuration] = useState(60);
   const [location, setLocation] = useState("");
-  const [tricksPracticed, setTricksPracticed] = useState<string[]>([]);
-  const [whatClicked, setWhatClicked] = useState("");
-  const [whatDidnt, setWhatDidnt] = useState("");
-  const [bodyFeel, setBodyFeel] = useState<BodyFeel>("fine");
+  const [tricksPracticed, setTricksPracticed] = useState<string[]>(initialTricks);
+  const [whatClicked, setWhatClicked] = useState(initialWhatClicked);
+  const [whatDidnt, setWhatDidnt] = useState(initialWhatDidnt);
+  const [bodyFeel, setBodyFeel] = useState<BodyFeel>(initialBodyFeel);
   const [injuryNotes, setInjuryNotes] = useState("");
   const [surfaceQuality, setSurfaceQuality] = useState<SurfaceQuality | "">("");
   const [showTrickPicker, setShowTrickPicker] = useState(false);

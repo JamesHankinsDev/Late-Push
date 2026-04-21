@@ -1,20 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthContext } from "@/components/AuthProvider";
 import SessionForm from "@/components/sessions/SessionForm";
 import CoachResponse from "@/components/sessions/CoachResponse";
 import { createSession, getUserSessions, updateSession } from "@/lib/sources/firestore";
-import { Session } from "@/lib/types";
+import { getTrickById } from "@/lib/curriculum";
+import { BodyFeel, Session } from "@/lib/types";
+
+type Outcome = "landed" | "close" | "bailed" | "injured";
+
+const OUTCOME_TO_PREFILL: Record<
+  Outcome,
+  { whatClicked?: string; whatDidnt?: string; bodyFeel?: BodyFeel }
+> = {
+  landed: { whatClicked: "Landed it clean." },
+  close: { whatClicked: "Got close — felt the pop." },
+  bailed: { whatDidnt: "Bailed tonight. Going to sleep on it." },
+  injured: { bodyFeel: "injured" },
+};
 
 export default function NewSessionPage() {
   const { profile } = useAuthContext();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [coachResponse, setCoachResponse] = useState("");
   const [coachLoading, setCoachLoading] = useState(false);
   const [sessionSaved, setSessionSaved] = useState(false);
+
+  const trickIdParam = searchParams.get("trickId");
+  const outcomeParam = searchParams.get("outcome") as Outcome | null;
+  const initialTricks =
+    trickIdParam && getTrickById(trickIdParam) ? [trickIdParam] : [];
+  const prefill = outcomeParam ? OUTCOME_TO_PREFILL[outcomeParam] ?? {} : {};
 
   const handleSubmit = async (
     sessionData: Omit<Session, "id" | "userId" | "createdAt" | "coachResponse">
@@ -75,7 +95,14 @@ export default function NewSessionPage() {
       </div>
 
       {!sessionSaved ? (
-        <SessionForm onSubmit={handleSubmit} loading={loading} />
+        <SessionForm
+          onSubmit={handleSubmit}
+          loading={loading}
+          initialTricks={initialTricks}
+          initialWhatClicked={prefill.whatClicked}
+          initialWhatDidnt={prefill.whatDidnt}
+          initialBodyFeel={prefill.bodyFeel}
+        />
       ) : (
         <div className="space-y-6">
           <div className="bg-concrete-800 border border-skate-lime/30 rounded-lg p-4 text-center">
