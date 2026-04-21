@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Eyebrow, Tag } from "@/components/ui/primitives";
+import { useAuthContext } from "@/components/AuthProvider";
+import { mergePrivacy } from "@/lib/social/privacy";
 import {
   MOCK_SKATERS,
   MOCK_CREWS,
@@ -9,7 +11,6 @@ import {
   MOCK_FEED,
 } from "@/lib/social/mock";
 import {
-  NearbyTab,
   CrewsTab,
   MeetupsTab,
   FeedTab,
@@ -19,6 +20,8 @@ import {
   LeaderboardWidget,
   DMsWidget,
 } from "@/components/social/widgets";
+import SocialOff from "@/components/social/SocialOff";
+import NearbyReal from "@/components/social/NearbyReal";
 
 type TabId = "nearby" | "crews" | "meetups" | "feed";
 
@@ -30,31 +33,57 @@ const TABS: { id: TabId; lbl: string; ct: number }[] = [
 ];
 
 export default function SocialPage() {
+  const { profile } = useAuthContext();
   const [tab, setTab] = useState<TabId>("nearby");
+
+  const privacy = mergePrivacy(profile?.privacy);
+  const socialOn = privacy.socialEnabled;
+  const hasAlias = Boolean(profile?.alias);
+
+  if (!socialOn) {
+    return (
+      <div>
+        <div className="social-header">
+          <div>
+            <Eyebrow>THE SOCIAL HUB</Eyebrow>
+            <h2 className="hed hed-l" style={{ marginTop: 10 }}>
+              Skate with people.
+            </h2>
+            <p className="dim" style={{ maxWidth: "52ch", marginTop: 8 }}>
+              Solo is fine. With others is better. Matched by tier, what
+              you&apos;re working on, and proximity — always alias-only.
+            </p>
+          </div>
+        </div>
+        <SocialOff hasAlias={hasAlias} />
+      </div>
+    );
+  }
 
   return (
     <div>
-      {/* Preview notice */}
-      <div
-        className="card-dark"
-        style={{
-          padding: "12px 18px",
-          marginBottom: 20,
-          borderColor: "var(--hazard)",
-          background: "rgba(245,212,0,0.04)",
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          flexWrap: "wrap",
-        }}
-      >
-        <Tag tone="yellow">PREVIEW</Tag>
-        <div className="dim" style={{ fontSize: 13, lineHeight: 1.5, flex: 1 }}>
-          Everything on this page is mock data — the Social backend
-          isn&apos;t live yet. Buttons are disabled so nothing fakes a
-          real interaction. The shape is final; the names aren&apos;t real.
+      {/* Preview notice for non-Nearby tabs (still mocked during 7A) */}
+      {tab !== "nearby" && (
+        <div
+          className="card-dark"
+          style={{
+            padding: "12px 18px",
+            marginBottom: 20,
+            borderColor: "var(--hazard)",
+            background: "rgba(245,212,0,0.04)",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            flexWrap: "wrap",
+          }}
+        >
+          <Tag tone="yellow">PREVIEW</Tag>
+          <div className="dim" style={{ fontSize: 13, lineHeight: 1.5, flex: 1 }}>
+            Crews, Meetups, and Feed are still mock previews — the real
+            backend lands in later phases. Nearby is live.
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="social-header">
         <div>
@@ -85,7 +114,7 @@ export default function SocialPage() {
 
       <div className="social-layout">
         <div>
-          {tab === "nearby" && <NearbyTab />}
+          {tab === "nearby" && <NearbyReal />}
           {tab === "crews" && <CrewsTab />}
           {tab === "meetups" && <MeetupsTab />}
           {tab === "feed" && <FeedTab />}

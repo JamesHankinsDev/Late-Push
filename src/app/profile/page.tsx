@@ -170,6 +170,11 @@ export default function ProfilePage() {
             <Link href="/profile/edit">
               <Button variant="primary">Edit profile</Button>
             </Link>
+            <Link href="/settings">
+              <Button variant="ghost" size="sm" style={{ width: "100%", justifyContent: "center" }}>
+                Settings & privacy
+              </Button>
+            </Link>
             <Button variant="ghost" size="sm" onClick={signOut}>
               Sign out
             </Button>
