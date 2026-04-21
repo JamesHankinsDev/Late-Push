@@ -29,8 +29,12 @@ export async function syncPublicProfile(
   const pub = computePublicProfile(profile);
 
   if (!pub.privacy.socialEnabled || !pub.alias) {
-    const existing = await getDoc(ref);
-    if (existing.exists()) await deleteDoc(ref);
+    // Idempotent: deleteDoc is a no-op if the doc doesn't exist.
+    // Don't pre-read — the read rule uses resource.data which is null
+    // for non-existent docs and would require an extra owner-only branch.
+    await deleteDoc(ref).catch(() => {
+      /* swallow — doc may not exist, which is the expected state */
+    });
     return;
   }
 

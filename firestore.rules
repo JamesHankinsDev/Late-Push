@@ -18,8 +18,12 @@ service cloud.firestore {
     // user IF the target has socialEnabled.
     // ============================================================
     match /publicProfiles/{uid} {
+      // The owner can always read their own public profile (used to
+      // preview + to idempotently sync/delete on privacy toggles).
+      // Other users read only when the target opted into social.
       allow read: if request.auth != null
-        && resource.data.privacy.socialEnabled == true;
+        && (request.auth.uid == uid
+            || resource.data.privacy.socialEnabled == true);
       allow create, update: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.uid == uid;
