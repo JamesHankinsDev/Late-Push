@@ -156,6 +156,47 @@ export interface Block {
 export type FriendshipStatus = "pending" | "accepted";
 export type TrustLevel = "stranger" | "friend" | "trusted";
 
+export type CrewVisibility = "public" | "invite-only";
+export type CrewRole = "owner" | "member";
+
+export interface Crew {
+  id: string;
+  name: string;
+  tag: string; // 2–5 char short code
+  color: string; // hex; user-picked from brand palette
+  description: string;
+  createdBy: string;
+  createdAt: string;
+  visibility: CrewVisibility;
+  meetingCadence?: string; // e.g. "Sat 9am"
+  levelRange?: string; // e.g. "T1-T3"
+  memberCount: number; // denormalized; updated on join/leave
+}
+
+export interface CrewMembership {
+  id: string; // `${crewId}__${uid}`
+  crewId: string;
+  uid: string;
+  alias?: string;
+  aliasColor?: string;
+  role: CrewRole;
+  joinedAt: string;
+  invitedBy?: string;
+}
+
+export interface CrewInvite {
+  id: string; // `${crewId}__${inviteeUid}`
+  crewId: string;
+  inviteeUid: string;
+  inviteeAlias?: string;
+  invitedBy: string; // uid
+  inviterAlias?: string;
+  crewName?: string; // denormalized for listing
+  crewTag?: string;
+  crewColor?: string;
+  createdAt: string;
+}
+
 export interface Friendship {
   id: string; // composite: `${minUid}__${maxUid}`
   userA: string; // lexicographically smaller uid
