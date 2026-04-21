@@ -10,6 +10,11 @@ export type InjuryRisk = "low" | "medium" | "high";
 export type BodyFeel = "fine" | "sore" | "injured";
 export type SurfaceQuality = "smooth" | "rough" | "cracked" | "mixed";
 
+export interface DrillItem {
+  t: string; // task line
+  s: string; // subtitle / context
+}
+
 export interface Trick {
   id: string;
   name: string;
@@ -21,6 +26,7 @@ export interface Trick {
   searchQuery: string; // YouTube search query
   tips: string[];
   estimatedAdultLearningTime?: string; // e.g. "2-4 weeks", "1-3 sessions"
+  drill?: DrillItem[]; // per-trick drill steps shown on the Lesson page
 }
 
 export interface TrickProgress {

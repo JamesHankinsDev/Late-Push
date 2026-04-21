@@ -109,11 +109,21 @@ export default function LessonPage({ params }: { params: { id: string } }) {
     },
   ];
 
-  const drill = [
-    { t: "25 controlled attempts", s: "Film 3 from the side" },
-    { t: "5 motion-only reps (no land)", s: "Focus on the mechanics" },
-    { t: "10 attempts at working speed", s: "Only after the motion feels solid" },
+  const drill = trick.drill ?? [
+    { t: "Go out and work on it for 20–30 minutes", s: "Drill details will show up here once this trick has authored steps." },
   ];
+
+  // Tier 0 is knowledge/prep — no attempt counts, no "tonight's drill" framing.
+  const isKnowledgeTier = trick.tier === 0;
+  const drillHeading = isKnowledgeTier
+    ? "Before you push off"
+    : "Tonight's Drill";
+  const drillLabel = isKnowledgeTier
+    ? "QUICK CHECKS · DO THESE ONCE"
+    : "~20–30 MIN · CHECK OFF AS YOU GO";
+  const drillIntro = isKnowledgeTier
+    ? "⚑ Work through the list once. Then go skate."
+    : "⚑ Complete the set, check in below.";
 
   function logSession() {
     const url = `/sessions/new?trickId=${encodeURIComponent(trick!.id)}${
@@ -290,11 +300,11 @@ export default function LessonPage({ params }: { params: { id: string } }) {
 
           {/* Drill */}
           <div className="sec-head">
-            <h3>Tonight&apos;s Drill</h3>
-            <span className="label">~30 MIN · CHECK OFF AS YOU GO</span>
+            <h3>{drillHeading}</h3>
+            <span className="label">{drillLabel}</span>
           </div>
           <div className="drill">
-            <h4>⚑ Complete the set, check in below.</h4>
+            <h4>{drillIntro}</h4>
             {drill.map((d, i) => (
               <div
                 key={i}

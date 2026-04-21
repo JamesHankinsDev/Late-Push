@@ -53,6 +53,12 @@ export const TRICKS: Trick[] = [
       "Bearings live inside the wheels. ABEC ratings matter less than you think.",
       "Wheels: bigger and softer = better for rough pavement and beginners.",
     ],
+    drill: [
+      { t: "Name the 8 parts without peeking", s: "Deck, trucks, wheels, bearings, bushings, kingpin, grip, hardware" },
+      { t: "Find your kingpin nut and your pivot cup", s: "The two parts you'll touch most often" },
+      { t: "Adjust your kingpin a quarter-turn tighter, then looser", s: "Feel the difference in truck tension" },
+      { t: "Spin one wheel and count the seconds before it stops", s: "Clean bearings = a long spin" },
+    ],
   },
   {
     id: "choosing-setup",
@@ -71,6 +77,12 @@ export const TRICKS: Trick[] = [
       "Get your board built at a real skate shop. They'll spec it to your style and skill level.",
       "Budget: $120–$180 gets you a solid complete setup that won't fight you.",
       "Walmart/Target boards are a trap. The wood is heavy, the wheels are plastic, and the trucks are brittle.",
+    ],
+    drill: [
+      { t: "Measure your current deck width", s: "Write it down — 7.75? 8.0? 8.25?" },
+      { t: "Read the durometer printed on your wheels", s: "78a/87a/99a — this tells you a lot" },
+      { t: "Walk into a real skate shop and ask one question", s: "Even if you already have a board, shops remember" },
+      { t: "Decide: street, park, or cruiser?", s: "Your answer shapes every future gear choice" },
     ],
   },
   {
@@ -91,6 +103,12 @@ export const TRICKS: Trick[] = [
       "Shoes: flat, grippy, low-profile. Vans Old Skool, Emerica, Lakai, Etnies — anything skate-specific.",
       "Pads aren't dorky. Casts are dorky.",
     ],
+    drill: [
+      { t: "Inventory your gear: helmet, wrist guards, knee pads, shoes", s: "What's missing or broken?" },
+      { t: "Put your wrist guards on", s: "If you don't own a pair, order them tonight" },
+      { t: "Confirm your skate shoes are flat and grippy", s: "Running shoes don't count" },
+      { t: "Fit-check your helmet", s: "Two-finger rule: snug, not squeezing" },
+    ],
   },
   {
     id: "stance",
@@ -107,6 +125,12 @@ export const TRICKS: Trick[] = [
       "Have someone gently push you from behind — whichever foot you step forward with is probably your front foot",
       "Regular = left foot forward. Goofy = right foot forward. Neither is better.",
       "If both feel weird, you're normal. Pick one and commit for at least a week.",
+    ],
+    drill: [
+      { t: "Do the push test 3 times", s: "Have someone nudge you from behind — the catching foot is your front" },
+      { t: "Stand regular for 60 seconds on the board (grass or carpet)", s: "Left foot forward" },
+      { t: "Stand goofy for 60 seconds", s: "Right foot forward — pick whichever felt less terrifying" },
+      { t: "Commit to one stance for the next week", s: "Switching every session slows everything down" },
     ],
   },
   {
@@ -126,6 +150,11 @@ export const TRICKS: Trick[] = [
       "Knee pads let you slide on your knees instead of tumbling. Game changer on ramps.",
       "When you feel yourself going down, bend your knees and try to roll, don't brace",
       "If you're over 30, nobody will judge you for wearing pads. They'll judge you for the cast.",
+    ],
+    drill: [
+      { t: "5 controlled falls onto grass from a standing position", s: "Tuck the arms, roll onto a shoulder" },
+      { t: "5 knee-slides in pads on a smooth surface", s: "This is how you bail on transition — practice it now" },
+      { t: "Rehearse tucking your arms in slow-motion 10x", s: "Never, ever brace with straight arms" },
     ],
   },
 
@@ -147,6 +176,11 @@ export const TRICKS: Trick[] = [
       "Knees bent, weight slightly forward, eyes up",
       "Rock side-to-side and front-to-back to feel how the board responds",
     ],
+    drill: [
+      { t: "Stand on the board on grass for 2 minutes", s: "Feet over the bolts, knees bent, eyes up" },
+      { t: "Rock side-to-side 20 times", s: "Feel how the trucks lean" },
+      { t: "Step off to each side 5 times", s: "Practice dismounting both ways safely" },
+    ],
   },
   {
     id: "pushing",
@@ -164,6 +198,11 @@ export const TRICKS: Trick[] = [
       "Push with long, smooth strokes — not little frantic taps",
       "Practice in a parking lot with smooth ground, not on sidewalk cracks",
       "Bend your front knee slightly — stiff legs are how you eat pavement",
+    ],
+    drill: [
+      { t: "10 single pushes in a smooth parking lot", s: "Long smooth strokes, front foot angled forward" },
+      { t: "Push continuously across 100 ft", s: "Don't stop between pushes — keep the rhythm" },
+      { t: "Try one push with your weak foot (mongo)", s: "Feels terrible. You still need it eventually." },
     ],
   },
   {
@@ -183,6 +222,11 @@ export const TRICKS: Trick[] = [
       "Knees bent, arms relaxed for balance",
       "Roll out a long straight line in an empty lot, push once, ride to the end",
     ],
+    drill: [
+      { t: "Push once, ride 30 ft with both feet on", s: "Roll through to a natural stop" },
+      { t: "10 push-and-ride reps", s: "Rotate the front foot as the back foot lands" },
+      { t: "Ride 50 ft with your eyes fixed on a target ahead", s: "Do not look at your feet" },
+    ],
   },
   {
     id: "turning",
@@ -200,6 +244,11 @@ export const TRICKS: Trick[] = [
       "Toe-side turns feel more natural for most people. Heel-side takes practice.",
       "Practice big, sweeping turns in an empty parking lot before tight turns",
       "If your trucks feel too tight or loose, adjust the kingpin nut a quarter turn at a time",
+    ],
+    drill: [
+      { t: "10 wide toe-side carves", s: "Shoulders lead, weight on the toes" },
+      { t: "10 wide heel-side carves", s: "The weaker direction for most people" },
+      { t: "String together figure-8s for 2 minutes", s: "Smooth and continuous, no foot stops" },
     ],
   },
   {
@@ -219,6 +268,11 @@ export const TRICKS: Trick[] = [
       "Practice at slow speeds first. Seriously. Slow speeds.",
       "Don't use your tail to brake — it destroys your board and looks bad",
     ],
+    drill: [
+      { t: "10 foot-brake stops at slow speed", s: "Flat sole drag, weight on front foot" },
+      { t: "5 foot-brakes at a faster cruising speed", s: "Same technique, more control needed" },
+      { t: "Rehearse the bail-and-run twice", s: "Step off forward, let the board roll" },
+    ],
   },
   {
     id: "riding-bumps",
@@ -237,6 +291,11 @@ export const TRICKS: Trick[] = [
       "Approach cracks at an angle when possible to reduce the jolt",
       "Softer wheels (78-87a) handle bumps way better than hard street wheels",
     ],
+    drill: [
+      { t: "Roll over 10 small cracks", s: "Lift front wheels slightly, knees absorb" },
+      { t: "Approach a crack at a 30–45° angle 5 times", s: "Softer jolt than straight-on" },
+      { t: "Ride over 5 pebbles intentionally", s: "Trust the board to clear them" },
+    ],
   },
   {
     id: "riding-comfort",
@@ -254,6 +313,11 @@ export const TRICKS: Trick[] = [
       "Practice riding over small cracks and bumps — lift your front wheels slightly",
       "Try riding in both directions, even your weak side",
       "Ride with music. It makes practice feel like fun instead of homework.",
+    ],
+    drill: [
+      { t: "30-minute continuous cruise session", s: "No stopping unless you need to push" },
+      { t: "Loop your spot in both directions", s: "Forward and toward your weak side" },
+      { t: "Step off and back on 5 times without breaking flow", s: "Remount discipline — you'll need it for everything later" },
     ],
   },
 
@@ -275,6 +339,11 @@ export const TRICKS: Trick[] = [
       "Frontside is usually easier to learn first",
       "Practice both directions even if one feels terrible. Balance is everything.",
     ],
+    drill: [
+      { t: "10 frontside kickturns on flat", s: "Shoulders lead, pivot on the back wheels" },
+      { t: "10 backside kickturns on flat", s: "The scarier direction — stick with it" },
+      { t: "5 kickturns while rolling at slow speed", s: "Real-world version — usable immediately" },
+    ],
   },
   {
     id: "tick-tack",
@@ -291,6 +360,11 @@ export const TRICKS: Trick[] = [
       "Light pressure on the tail — you only need the front wheels an inch off the ground",
       "Use your hips and shoulders to initiate the pivot, not just your feet",
       "Try to tic-tac uphill slightly — great balance builder",
+    ],
+    drill: [
+      { t: "20 continuous tic-tacs on flat", s: "Build a left-right-left-right rhythm" },
+      { t: "Tic-tac up a slight incline for 20 ft", s: "Generate forward motion from the pivots alone" },
+      { t: "Tic-tac around a cone or chalk circle", s: "Steering without pushing" },
     ],
   },
   {
@@ -309,6 +383,11 @@ export const TRICKS: Trick[] = [
       "Your weight should be slightly over the 'back' trucks (which are now in front)",
       "Practice pushing fakie — it feels awkward but builds great board sense",
       "Don't look at your feet. Look where you're going. Trust the board.",
+    ],
+    drill: [
+      { t: "Ride fakie in a straight line for 30 ft", s: "Both feet on, weight slightly over the nose-now-back" },
+      { t: "3 fakie pushes", s: "Awkward but builds huge board sense" },
+      { t: "One fakie carve, either direction", s: "Trust the board — do not look at your feet" },
     ],
   },
   {
@@ -329,6 +408,11 @@ export const TRICKS: Trick[] = [
       "Keep your knees bent and your weight centered, not leaning back",
       "Long-term goal: 10+ second manuals. That's a Tier 4 milestone.",
     ],
+    drill: [
+      { t: "10 manual attempts — even 1 second counts as a rep", s: "Arms out, weight back over the trucks" },
+      { t: "Manual from one crack to the next", s: "Distance goal beats time goal" },
+      { t: "One stretch-goal: 5-second manual", s: "If it happens, great. If not, next session." },
+    ],
   },
   {
     id: "riding-off-curb",
@@ -348,6 +432,11 @@ export const TRICKS: Trick[] = [
       "Bend your knees on the landing to absorb the drop",
       "Don't try to ollie off — just roll off. That comes later.",
     ],
+    drill: [
+      { t: "10 roll-offs from a parking block", s: "Perpendicular, slow, lean back slightly" },
+      { t: "5 roll-offs from a standard curb", s: "Knees bent to absorb" },
+      { t: "3 roll-offs at a slight angle", s: "Once the straight version feels automatic" },
+    ],
   },
   {
     id: "pumping",
@@ -365,6 +454,11 @@ export const TRICKS: Trick[] = [
       "Your arms help — pump them like you're doing a standing jump",
       "Start on a small quarter pipe, going back and forth",
       "The rhythm clicks suddenly — one session it'll just make sense",
+    ],
+    drill: [
+      { t: "10 back-and-forth pumps on a quarter pipe", s: "Compress down, extend up" },
+      { t: "30 seconds continuous pumping", s: "No pushing — only pumping" },
+      { t: "Pump 1 inch higher than last time", s: "Incremental — height is the scoreboard" },
     ],
   },
   {
@@ -384,6 +478,11 @@ export const TRICKS: Trick[] = [
       "Twist your shoulders and hips to initiate the slide — feet follow",
       "Start at low speed and just kick the wheels out 30 degrees, then ride away",
       "This trick is hard. Don't expect it to click in one session.",
+    ],
+    drill: [
+      { t: "10 tiny slides at low speed", s: "Kick the back wheels out ~30°, ride away" },
+      { t: "Film one from the side", s: "Check if your shoulders are leading the twist" },
+      { t: "Try it on smoother ground if it's bucking you", s: "Surface matters more than technique early on" },
     ],
   },
 
@@ -406,6 +505,12 @@ export const TRICKS: Trick[] = [
       "Film yourself from the side. You're probably not sliding your front foot enough.",
       "Commit to doing 50 ollie attempts per session. Repetition is the only teacher.",
     ],
+    drill: [
+      { t: "50 stationary pops on grass", s: "Focus on the ankle snap, not the jump" },
+      { t: "Film 3 attempts from the side", s: "Is the front foot actually sliding?" },
+      { t: "10 pop-and-slide reps, no land focus", s: "Motion only — drill the mechanics" },
+      { t: "One attempt at walking speed", s: "Only after stationary feels dialed" },
+    ],
   },
   {
     id: "rolling-ollie",
@@ -423,6 +528,11 @@ export const TRICKS: Trick[] = [
       "The motion is the same as stationary — don't overthink it",
       "Lean slightly forward. Most people lean back out of fear and the board shoots out.",
       "Set a small object to ollie over once you're consistent — a stick, a pencil",
+    ],
+    drill: [
+      { t: "20 ollies at walking speed", s: "Slower than you think" },
+      { t: "10 ollies at a gentle cruise", s: "Build up gradually once walking speed is solid" },
+      { t: "3 attempts to ollie a pencil or stick", s: "A real object to clear — any clearance counts" },
     ],
   },
   {
@@ -442,6 +552,11 @@ export const TRICKS: Trick[] = [
       "Keep your shoulders level and parallel to the board",
       "Commit to landing on it. Half-committing is how you get shinners.",
     ],
+    drill: [
+      { t: "20 stationary shuvit attempts", s: "Scoop with the toes, front foot barely helps" },
+      { t: "10 rolling shuvits at slow speed", s: "Same mechanics, add momentum" },
+      { t: "Film 3 — check shoulder level", s: "Shoulders should stay parallel to the board" },
+    ],
   },
   {
     id: "fs-180",
@@ -459,6 +574,11 @@ export const TRICKS: Trick[] = [
       "Your head and shoulders should be at 90 degrees before your feet leave the ground",
       "Commit to the full 180. Landing at 90 and pivoting the rest is fine at first.",
       "You'll land fakie — make sure you're comfortable riding fakie first",
+    ],
+    drill: [
+      { t: "15 stationary frontside 180 ollies", s: "Wind shoulders first, then pop" },
+      { t: "10 attempts at walking speed", s: "Land fakie, roll away" },
+      { t: "5 frontside pivots without a pop", s: "If the full trick is scary, drill the rotation alone" },
     ],
   },
   {
@@ -478,6 +598,11 @@ export const TRICKS: Trick[] = [
       "The scoop of the tail helps with the rotation",
       "Practice backside pivots extensively before attempting this",
     ],
+    drill: [
+      { t: "20 backside pivots on flat, no pop", s: "Drill the rotation alone first" },
+      { t: "15 stationary backside 180 attempts", s: "Look over the back shoulder to start" },
+      { t: "5 attempts at walking speed if stationary is working", s: "Commit — you can't see, just trust" },
+    ],
   },
   {
     id: "ollie-up-curb",
@@ -495,6 +620,11 @@ export const TRICKS: Trick[] = [
       "You need more speed than you think — momentum helps clear the height",
       "Pop the ollie slightly before the curb, not right at it",
       "Start with parking blocks or low ledges before real curbs",
+    ],
+    drill: [
+      { t: "10 rolling ollies next to the curb — no obstacle yet", s: "Just get the reps in parallel to it" },
+      { t: "5 ollies onto a parking block", s: "Lower than a curb, same mechanics" },
+      { t: "3 committed ollie-up-curb attempts", s: "Full commit or walk it off. No half-efforts." },
     ],
   },
   {
@@ -515,6 +645,11 @@ export const TRICKS: Trick[] = [
       "Don't overthink the rotation — let the board do its thing under your foot",
       "This trick is way less scary than the ollie. That's the point.",
     ],
+    drill: [
+      { t: "10 stationary no-comply attempts", s: "Step off toe-side, scoop, step back on" },
+      { t: "10 rolling no-comply attempts at slow speed", s: "Same mechanics, now with momentum" },
+      { t: "Film one — is the board rotating under you?", s: "Even a no-rotation step-on counts as progress" },
+    ],
   },
   {
     id: "boneless",
@@ -533,6 +668,11 @@ export const TRICKS: Trick[] = [
       "Jump off your planted foot while pulling the board up with your hand",
       "Land back on the board with both feet over the bolts",
       "This is the funnest trick on this whole list. Don't sleep on it.",
+    ],
+    drill: [
+      { t: "10 stationary boneless attempts", s: "Grab, step off, jump, land" },
+      { t: "5 at walking speed", s: "Start slow — a lot of moving parts" },
+      { t: "One stylish kicked-up boneless for fun", s: "This trick is supposed to be fun. Play with it." },
     ],
   },
 
@@ -555,6 +695,11 @@ export const TRICKS: Trick[] = [
       "Landing with just your back foot first is normal. Work on catching it with both.",
       "This trick has a notorious learning curve. 2-3 months of focused practice is normal.",
     ],
+    drill: [
+      { t: "30 stationary kickflip attempts", s: "Focus on the flick. Landings come later." },
+      { t: "10 flick-motion reps sitting down", s: "Off-board muscle memory for the ankle snap" },
+      { t: "Film 3 attempts — check the foot angle", s: "Toes hanging off the toe-side edge" },
+    ],
   },
   {
     id: "heelflip",
@@ -573,6 +718,11 @@ export const TRICKS: Trick[] = [
       "Keep your shoulders square to the board — twisting is the most common mistake",
       "Some find heelflips easier than kickflips. If kickflips aren't clicking, try this.",
     ],
+    drill: [
+      { t: "30 stationary heelflip attempts", s: "Heel off the toe-side edge, kick forward" },
+      { t: "10 attempts at walking speed", s: "Shoulders stay square — the #1 mistake is twisting" },
+      { t: "Film 3 from the side", s: "Are you staying over the board or drifting off?" },
+    ],
   },
   {
     id: "nose-manual",
@@ -590,6 +740,11 @@ export const TRICKS: Trick[] = [
       "Your weight needs to be over the front bolts, not the very tip of the nose",
       "Arms out for balance. Always arms out.",
       "If you feel yourself going over the front, step off to the side — don't try to save it",
+    ],
+    drill: [
+      { t: "10 short nose manuals (1–2 seconds)", s: "Weight over the front bolts, not the tip" },
+      { t: "5 balance holds with arms out", s: "Arms out is not optional on this one" },
+      { t: "Set a distance goal: nose manual between two cracks", s: "Short distances count" },
     ],
   },
   {
@@ -610,6 +765,11 @@ export const TRICKS: Trick[] = [
       "Start with very short grinds. Even 6 inches counts.",
       "Come off the end by gently lifting your front wheels or doing a small ollie off",
     ],
+    drill: [
+      { t: "Wax the practice ledge twice", s: "Skate wax or a candle — re-wax every session" },
+      { t: "10 attempts on a low, waxed ledge", s: "Short grinds count — even 6 inches" },
+      { t: "5 landed grinds, any length", s: "Both trucks make contact — that's the win" },
+    ],
   },
   {
     id: "boardslide",
@@ -628,6 +788,11 @@ export const TRICKS: Trick[] = [
       "Turn your shoulders 90 degrees as you ollie — your board follows your upper body",
       "Look at the end of the rail/ledge, not at your feet",
       "Lean slightly forward over the obstacle. Leaning back = credit card. Don't Google that.",
+    ],
+    drill: [
+      { t: "10 attempts on a low, well-waxed ledge", s: "Low enough that a bail is just a step-off" },
+      { t: "5 ollies with a 90° shoulder turn on flat", s: "Drill the rotation without the obstacle" },
+      { t: "3 committed boardslide attempts to a ride-away", s: "Commit forward over the ledge, always" },
     ],
   },
   {
@@ -648,6 +813,11 @@ export const TRICKS: Trick[] = [
       "Have a friend hold your hand the first few times — no shame in that",
       "The commitment lean is the whole trick. Once you lean in, gravity does the rest.",
     ],
+    drill: [
+      { t: "Stand on the coping with the tail down, 5 times", s: "No commit — just get used to the position" },
+      { t: "One hand-assisted drop-in", s: "Friend holds your hand, then lets go" },
+      { t: "3 unassisted drop-ins on the smallest ramp available", s: "Knee pads on. Bail on your knees if you need to." },
+    ],
   },
   {
     id: "rock-to-fakie",
@@ -665,6 +835,11 @@ export const TRICKS: Trick[] = [
       "Don't lean too far forward or your wheels will catch the coping on the way back",
       "Lift your front wheels slightly as you come back over the coping",
       "Commit to rolling away fakie. Hesitation here leads to hanging up on the coping.",
+    ],
+    drill: [
+      { t: "Roll up and touch the coping 5 times", s: "Don't go over — just feel the position" },
+      { t: "10 rock-to-fakie attempts, front wheels over", s: "The weight-shift is the whole trick" },
+      { t: "3 committed rock-to-fakies", s: "Lift front wheels clearing the coping on the way back" },
     ],
   },
   {
@@ -684,6 +859,11 @@ export const TRICKS: Trick[] = [
       "Backside kick turns (facing the ramp) are easier to start with",
       "Keep your weight slightly forward — leaning back on transition means sliding out",
     ],
+    drill: [
+      { t: "10 kickturns low on the transition", s: "Nowhere near the coping yet" },
+      { t: "5 kickturns a foot higher", s: "Push your comfort zone incrementally" },
+      { t: "3 kickturns near the coping", s: "Only after the lower heights feel easy" },
+    ],
   },
   {
     id: "fakie-ollie",
@@ -701,6 +881,11 @@ export const TRICKS: Trick[] = [
       "Your back foot (now leading) does the slide; your front foot (now in back) pops",
       "Start very slow. Your brain needs to recalibrate.",
       "Once this clicks, half-cabs, switch ollies, and a ton of new tricks open up",
+    ],
+    drill: [
+      { t: "20 stationary fakie-ollie attempts", s: "Same mechanics, mirror image" },
+      { t: "10 at slow rolling fakie speed", s: "Let your brain recalibrate" },
+      { t: "Film 3 — watch the slide", s: "Your back-now-front foot does the slide" },
     ],
   },
   {
@@ -720,6 +905,11 @@ export const TRICKS: Trick[] = [
       "Back foot scoops hard and back",
       "This is most adults' white whale trick. Be patient.",
       "Don't expect to land this in your first month. Or third. Just practice the motion.",
+    ],
+    drill: [
+      { t: "20 mechanical-motion attempts — landings are a bonus", s: "Scoop + flick, simultaneously" },
+      { t: "5 sit-down scoop-and-flick practice reps", s: "Build the dual motion off the board" },
+      { t: "Film one — is the board getting close to 360°?", s: "Even a half-rotation is real progress" },
     ],
   },
 ];
