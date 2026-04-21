@@ -49,7 +49,7 @@ export default function Nav() {
       <Link href="/dashboard" className="logo">
         LATE<span className="accent">/</span>PUSH
       </Link>
-      <div className="logo-sub">Never too late to push</div>
+      <div className="logo-sub">Never too late to skate</div>
 
       <div className="nav-items">
         {NAV_ITEMS.map((item) => {
@@ -62,6 +62,7 @@ export default function Nav() {
               className={`nav-item ${active ? "active" : ""}`}
             >
               <span
+                className="nav-item-num"
                 style={{
                   fontFamily: "var(--mono)",
                   fontSize: 10,
@@ -71,13 +72,14 @@ export default function Nav() {
               >
                 {item.n}
               </span>
-              {item.label}
+              <span className="nav-item-label">{item.label}</span>
             </Link>
           );
         })}
       </div>
 
       <div
+        className="nav-tier-bar"
         style={{
           marginTop: 20,
           padding: "10px 12px",
@@ -110,6 +112,7 @@ export default function Nav() {
       </div>
 
       <button
+        className="nav-signout"
         onClick={signOut}
         style={{
           marginTop: 10,

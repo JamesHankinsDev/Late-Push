@@ -253,13 +253,7 @@ export default function EditProfilePage() {
           <h3>Goals</h3>
           <span className="label">MULTI-SELECT · WHAT YOU WANT TO LAND</span>
         </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 10,
-          }}
-        >
+        <div className="multi-select-grid">
           {GOAL_OPTIONS.map((g) => {
             const sel = form.goals.includes(g);
             return (
@@ -284,13 +278,7 @@ export default function EditProfilePage() {
           <h3>Vibe</h3>
           <span className="label">MULTI-SELECT · HOW YOU LIKE TO SKATE</span>
         </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 10,
-          }}
-        >
+        <div className="multi-select-grid">
           {VIBE_OPTIONS.map((v) => {
             const sel = form.vibe.includes(v);
             return (

@@ -111,7 +111,7 @@ export default function Home() {
               color: "var(--paper-dim)",
             }}
           >
-            Never too late to push
+            Never too late to skate
           </div>
         </div>
 

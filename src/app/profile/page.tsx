@@ -383,17 +383,7 @@ export default function ProfilePage() {
               }
             })();
             return (
-              <div
-                key={s.id}
-                className="card-dark"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "80px 1fr auto auto",
-                  gap: 20,
-                  alignItems: "center",
-                  padding: "14px 20px",
-                }}
-              >
+              <div key={s.id} className="card-dark session-row">
                 <span
                   className="mono"
                   style={{

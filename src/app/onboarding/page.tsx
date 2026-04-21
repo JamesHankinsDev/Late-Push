@@ -199,13 +199,7 @@ export default function OnboardingPage() {
               What do you want to <span className="hi">land?</span>
             </h2>
             <p className="sub">Pick one or a few. We&apos;ll tune the path toward them.</p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 10,
-              }}
-            >
+            <div className="multi-select-grid">
               {GOAL_OPTIONS.map((g) => {
                 const sel = (data.goals ?? []).includes(g);
                 return (
@@ -233,13 +227,7 @@ export default function OnboardingPage() {
             <p className="sub">
               We&apos;ll match you with skaters who vibe similarly. Multi-select.
             </p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 10,
-              }}
-            >
+            <div className="multi-select-grid">
               {VIBE_OPTIONS.map((v) => {
                 const sel = (data.vibe ?? []).includes(v);
                 return (

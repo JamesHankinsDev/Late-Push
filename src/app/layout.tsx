@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Late Push — Never too late to push",
+  title: "Late Push — Never too late to skate",
   description:
     "A structured skateboarding learning platform for anyone starting later, picking it back up, or just wanting real curriculum. Structured lessons, session logging, AI coaching, and a spot to land.",
 };

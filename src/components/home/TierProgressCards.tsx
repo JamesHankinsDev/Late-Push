@@ -28,9 +28,7 @@ export default function TierProgressCards({
   });
 
   return (
-    <div
-      style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14 }}
-    >
+    <div className="tier-progress-grid">
       {rows.map((t) => {
         const isCurrent = t.number === currentTier;
         const isDone = t.pct === 100;

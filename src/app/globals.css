@@ -2387,6 +2387,422 @@ body.type-condensed {
   font-family: var(--mono);
 }
 
+/* Classes that replace inline style grids so media queries can reach them */
+.tier-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.session-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto auto;
+  gap: 20px;
+  align-items: center;
+  padding: 14px 20px;
+}
+.multi-select-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* ============================================================
+   MOBILE — <=768px
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* Shell */
+  .app {
+    grid-template-columns: 1fr;
+  }
+  .main-inner {
+    max-width: 100%;
+    padding: 20px 16px 96px; /* leave room for bottom nav */
+    overflow-x: hidden;
+  }
+  .density-compact .main-inner {
+    padding: 16px 14px 96px;
+  }
+
+  /* Left rail → bottom tab bar */
+  .nav {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    flex-direction: row;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    border-right: none;
+    border-top: 2px solid var(--ink-3);
+    background: var(--ink-2);
+    z-index: 50;
+  }
+  .nav .logo,
+  .nav .logo-sub,
+  .nav-tier-bar,
+  .nav-profile,
+  .nav-signout,
+  .nav-item-num {
+    display: none;
+  }
+  .nav-items {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    gap: 4px;
+    align-items: stretch;
+  }
+  .nav-item {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 6px;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+  .nav-item.active::before {
+    display: none;
+  }
+
+  /* Typography scale */
+  .hed-xl {
+    font-size: 48px;
+    letter-spacing: 0;
+  }
+  .hed-l {
+    font-size: 34px;
+  }
+  .hed-m {
+    font-size: 24px;
+  }
+  .hed-s {
+    font-size: 20px;
+  }
+  .sec-head {
+    margin: 24px 0 12px;
+  }
+  .sec-head h3 {
+    font-size: 22px;
+  }
+
+  /* Home hero */
+  .home-hero {
+    padding: 22px 22px;
+    border-radius: var(--r-m);
+    margin-bottom: 20px;
+  }
+  .home-hero .huge {
+    font-size: 40px;
+    line-height: 1;
+    margin: 10px 0 16px;
+    max-width: none;
+  }
+  .home-hero-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .hero-stat {
+    padding: 10px;
+  }
+  .hero-stat .num {
+    font-size: 26px;
+  }
+
+  /* Today grid */
+  .today-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .mission-head {
+    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .mission-body {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 14px;
+  }
+  .mission-illus {
+    display: none;
+  }
+  .widget {
+    padding: 14px;
+  }
+
+  /* Tier progress cards (5-col grid) */
+  .tier-progress-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .tier-progress-grid > div {
+    padding: 14px !important;
+  }
+
+  /* Session rows (80px 1fr auto auto) */
+  .session-row {
+    grid-template-columns: 1fr auto;
+    gap: 6px 10px;
+    padding: 12px 14px;
+  }
+  .session-row > :nth-child(1) {
+    grid-column: 1 / -1;
+    font-size: 11px;
+  }
+  .session-row > :nth-child(4) {
+    display: none;
+  }
+
+  /* Path + Lesson */
+  .path-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .path-tiers {
+    margin-bottom: 16px;
+  }
+  .lesson {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .lesson-side {
+    position: static;
+  }
+  .lesson-hero {
+    padding: 22px 20px 18px;
+    margin-bottom: 18px;
+  }
+  .lesson-hero .big-title {
+    font-size: 44px;
+  }
+  .lesson-hero .blurb {
+    font-size: 14px;
+  }
+  .step {
+    grid-template-columns: 44px 1fr;
+    padding: 14px;
+  }
+  .step .num {
+    font-size: 28px;
+  }
+
+  /* Winding path — collapse to a single left-aligned column */
+  .winding-path {
+    padding: 20px 0 24px;
+  }
+  .winding-path .path-spine {
+    left: 14px;
+    transform: none;
+  }
+  .winding-row {
+    grid-template-columns: 1fr;
+    padding: 10px 0;
+    min-height: 0;
+  }
+  .winding-row.left .node-wrap:last-child,
+  .winding-row.right .node-wrap:first-child {
+    display: none;
+  }
+  .winding-row .node-wrap {
+    padding: 0 0 0 34px !important;
+    justify-content: flex-start !important;
+    visibility: visible !important;
+  }
+  .node {
+    width: 100%;
+  }
+  .tier-divider .stamp-lg {
+    font-size: 18px;
+    padding: 6px 14px;
+  }
+
+  /* Social */
+  .social-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .social-tabs {
+    overflow-x: auto;
+  }
+  .social-layout {
+    grid-template-columns: 1fr;
+  }
+  .social-layout .social-side {
+    position: static;
+    order: 2;
+  }
+
+  /* Crews */
+  .crews-grid {
+    grid-template-columns: 1fr;
+  }
+  .crew-banner {
+    height: 80px;
+  }
+  .crew-banner .mark {
+    font-size: 56px;
+  }
+
+  /* Meetups */
+  .meetup-card {
+    grid-template-columns: 64px 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+  .meetup-go {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Tree / Timeline */
+  .tree-view {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Feed */
+  .feed-post {
+    border-radius: var(--r-s);
+  }
+  .post-hero {
+    font-size: 40px;
+  }
+
+  /* Profile */
+  .profile-header {
+    padding: 22px 18px 18px;
+    margin-bottom: 18px;
+  }
+  .profile-ident {
+    grid-template-columns: 64px 1fr;
+    gap: 14px;
+  }
+  .profile-ident .avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 26px;
+    border-width: 3px;
+    box-shadow: 3px 3px 0 var(--hazard-deep);
+  }
+  .profile-ident h2 {
+    font-size: 34px;
+  }
+  .profile-ident .bio {
+    font-size: 13px;
+  }
+  .profile-ident > div:last-child {
+    grid-column: 1 / -1;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+  .profile-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .profile-stat {
+    padding: 12px 14px;
+  }
+  .profile-stat .v {
+    font-size: 26px;
+  }
+
+  /* Badge grid */
+  .badge-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .badge-card {
+    padding: 14px 10px;
+  }
+  .badge-card .disc {
+    width: 54px;
+    height: 54px;
+    font-size: 24px;
+  }
+
+  /* Multi-select grids (onboarding / profile edit goals + vibe) */
+  .multi-select-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Onboarding card */
+  .onb-card {
+    padding: 24px 20px;
+  }
+  .onb-card h2 {
+    font-size: 34px;
+  }
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+  .onb-nav {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .onb-nav > * {
+    width: 100%;
+  }
+  .onb-nav > * > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Chip/skater card tightening */
+  .skater-card {
+    padding: 14px;
+  }
+  .skater-card .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  .chip {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  /* Drill / checkin */
+  .drill {
+    padding: 16px;
+  }
+  .drill h4 {
+    font-size: 18px;
+  }
+  .checkin {
+    padding: 16px;
+  }
+  .checkin h4 {
+    font-size: 22px;
+  }
+  .check-opt {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+}
+
+/* Very narrow phones: 2-col stats become 1-col sometimes */
+@media (max-width: 400px) {
+  .hero-stat .num {
+    font-size: 22px;
+  }
+  .hero-stat .lbl {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+  .profile-stat .v {
+    font-size: 22px;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
