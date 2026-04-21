@@ -60,6 +60,13 @@ export default function LessonPage({ params }: { params: { id: string } }) {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
   const [marking, setMarking] = useState(false);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+
+  // Reset the active video when the trick changes so the player doesn't
+  // persist the wrong clip while navigating between lessons.
+  useEffect(() => {
+    setActiveVideoId(null);
+  }, [params.id]);
 
   useEffect(() => {
     if (!trick) return;
@@ -215,18 +222,56 @@ export default function LessonPage({ params }: { params: { id: string } }) {
               {loadingVideos
                 ? "LOADING..."
                 : videos.length
-                ? `${videos.length} RESULTS · TAP TO OPEN`
+                ? activeVideoId
+                  ? "NOW PLAYING"
+                  : `${videos.length} RESULTS · TAP TO PLAY`
                 : "NO VIDEOS"}
             </span>
           </div>
 
-          {videos.length > 0 ? (
-            <a
-              href={`https://www.youtube.com/watch?v=${videos[0].videoId}`}
-              target="_blank"
-              rel="noopener noreferrer"
+          {activeVideoId ? (
+            <div
+              style={{
+                position: "relative",
+                aspectRatio: "16 / 9",
+                border: "2px solid var(--ink)",
+                borderRadius: "var(--r-m)",
+                overflow: "hidden",
+                boxShadow: "var(--shadow-hard)",
+                background: "var(--ink-3)",
+              }}
+            >
+              <iframe
+                key={activeVideoId}
+                src={`https://www.youtube-nocookie.com/embed/${activeVideoId}?autoplay=1&rel=0&modestbranding=1`}
+                title={
+                  videos.find((v) => v.videoId === activeVideoId)?.title ??
+                  `${trick.name} tutorial`
+                }
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: 0,
+                  display: "block",
+                }}
+              />
+            </div>
+          ) : videos.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setActiveVideoId(videos[0].videoId)}
               className="video-box"
-              style={{ display: "block" }}
+              style={{
+                display: "block",
+                padding: 0,
+                textAlign: "left",
+                backgroundImage: `url(${videos[0].thumbnail})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+              aria-label={`Play ${videos[0].title}`}
             >
               <div className="play">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -237,7 +282,7 @@ export default function LessonPage({ params }: { params: { id: string } }) {
                 <div className="v-title">{videos[0].title}</div>
                 <div className="v-chan">{videos[0].channelTitle.toUpperCase()}</div>
               </div>
-            </a>
+            </button>
           ) : (
             <div className="video-box" aria-disabled>
               <div className="play">
@@ -254,21 +299,62 @@ export default function LessonPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
+          {/* External fallback + secondary videos */}
+          {videos.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 10,
+                gap: 12,
+              }}
+            >
+              <span className="label">
+                {activeVideoId ? "PLAYING INLINE" : "TAP COVER TO PLAY"}
+              </span>
+              {activeVideoId && (
+                <a
+                  href={`https://www.youtube.com/watch?v=${activeVideoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mono"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--hazard)",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Open on YouTube →
+                </a>
+              )}
+            </div>
+          )}
+
           {videos.length > 1 && (
             <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
               {videos.slice(1).map((v) => (
-                <a
+                <button
+                  type="button"
                   key={v.videoId}
-                  href={`https://www.youtube.com/watch?v=${v.videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  onClick={() => setActiveVideoId(v.videoId)}
                   style={{
                     display: "flex",
                     gap: 12,
                     padding: 10,
-                    background: "var(--ink-2)",
-                    border: "1px solid var(--ink-3)",
+                    background:
+                      activeVideoId === v.videoId
+                        ? "rgba(245,212,0,0.08)"
+                        : "var(--ink-2)",
+                    border:
+                      activeVideoId === v.videoId
+                        ? "1px solid var(--hazard)"
+                        : "1px solid var(--ink-3)",
                     borderRadius: "var(--r-s)",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    color: "inherit",
                   }}
                 >
                   <img
@@ -307,7 +393,7 @@ export default function LessonPage({ params }: { params: { id: string } }) {
                       {v.channelTitle.toUpperCase()}
                     </div>
                   </div>
-                </a>
+                </button>
               ))}
             </div>
           )}
