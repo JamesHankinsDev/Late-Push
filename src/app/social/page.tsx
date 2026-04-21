@@ -4,19 +4,12 @@ import { useState } from "react";
 import { Eyebrow } from "@/components/ui/primitives";
 import { useAuthContext } from "@/components/AuthProvider";
 import { mergePrivacy } from "@/lib/social/privacy";
-import {
-  MOCK_SKATERS,
-  MOCK_CREWS,
-  MOCK_MEETUPS,
-  MOCK_FEED,
-} from "@/lib/social/mock";
 import FriendsTab from "@/components/social/FriendsTab";
 import CrewsTab from "@/components/social/CrewsTab";
 import MeetupsTab from "@/components/social/MeetupsTab";
 import FeedTab from "@/components/social/FeedTab";
 import {
   LiveNowWidget,
-  LeaderboardWidget,
   DMsWidget,
 } from "@/components/social/widgets";
 import SocialOff from "@/components/social/SocialOff";
@@ -24,12 +17,12 @@ import NearbyReal from "@/components/social/NearbyReal";
 
 type TabId = "nearby" | "friends" | "crews" | "meetups" | "feed";
 
-const TABS: { id: TabId; lbl: string; ct: number }[] = [
-  { id: "nearby", lbl: "NEARBY", ct: MOCK_SKATERS.length },
-  { id: "friends", lbl: "FRIENDS", ct: 0 }, // populated from live data
-  { id: "crews", lbl: "CREWS", ct: MOCK_CREWS.length },
-  { id: "meetups", lbl: "MEETUPS", ct: MOCK_MEETUPS.length },
-  { id: "feed", lbl: "FEED", ct: MOCK_FEED.length },
+const TABS: { id: TabId; lbl: string }[] = [
+  { id: "nearby", lbl: "NEARBY" },
+  { id: "friends", lbl: "FRIENDS" },
+  { id: "crews", lbl: "CREWS" },
+  { id: "meetups", lbl: "MEETUPS" },
+  { id: "feed", lbl: "FEED" },
 ];
 
 export default function SocialPage() {
@@ -84,7 +77,6 @@ export default function SocialPage() {
               onClick={() => setTab(t.id)}
             >
               {t.lbl}
-              <span className="ct">{t.ct}</span>
             </button>
           ))}
         </div>
@@ -100,7 +92,6 @@ export default function SocialPage() {
         </div>
         <div className="social-side">
           <LiveNowWidget />
-          <LeaderboardWidget />
           <DMsWidget />
         </div>
       </div>

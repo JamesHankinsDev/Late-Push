@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { MOCK_LEADERBOARD, MOCK_DMS } from "@/lib/social/mock";
 import { useAuthContext } from "@/components/AuthProvider";
 import {
   getMyPresence,
@@ -11,9 +10,14 @@ import {
   stopLive,
 } from "@/lib/sources/livePresence";
 import { blockedUidsFor } from "@/lib/sources/blocks";
+import { listMyConversations } from "@/lib/sources/conversations";
 import { aliasColor, aliasInitials } from "@/lib/social/aliases";
-import { LivePresence } from "@/lib/types";
+import { Conversation, LivePresence } from "@/lib/types";
 import { Button } from "@/components/ui/primitives";
+
+// ==========================================================================
+// LIVE NOW — manual presence, polled every 45s
+// ==========================================================================
 
 export function LiveNowWidget() {
   const { profile } = useAuthContext();
@@ -38,7 +42,6 @@ export function LiveNowWidget() {
 
   useEffect(() => {
     refresh();
-    // Cheap polling — live-now is a weak real-time surface.
     const t = setInterval(refresh, 45_000);
     return () => clearInterval(t);
   }, [refresh]);
@@ -103,12 +106,7 @@ export function LiveNowWidget() {
       ) : (
         <div className="live-rail">
           {others.slice(0, 6).map((s) => (
-            <Link
-              key={s.uid}
-              href={`/social`}
-              className="live-skater"
-              style={{ textDecoration: "none" }}
-            >
+            <div key={s.uid} className="live-skater">
               <div
                 className="avatar"
                 style={{
@@ -121,7 +119,7 @@ export function LiveNowWidget() {
                 <span className="n">@{s.alias}</span>
                 <span className="s">{s.spotName ?? "SOMEWHERE"}</span>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}
@@ -129,118 +127,127 @@ export function LiveNowWidget() {
   );
 }
 
-export function LeaderboardWidget() {
-  return (
-    <div className="widget">
-      <div className="widget-head">
-        <span className="ttl">WEEK XP · FRIENDS</span>
-        <span className="label">RESETS SUN</span>
-      </div>
-      {MOCK_LEADERBOARD.map((l) => (
-        <div
-          key={l.r}
-          className={`lb-item ${l.r <= 3 ? "top-3" : ""}`}
-          style={{
-            background: l.you ? "rgba(255,90,60,0.06)" : "transparent",
-            margin: "0 -4px",
-            padding: "8px 4px",
-            borderRadius: 4,
-          }}
-        >
-          <span className="lb-rank">{l.r}</span>
-          <div className="lb-avatar" style={{ background: l.color }}>
-            {l.avatar}
-          </div>
-          <span
-            className="lb-name"
-            style={{
-              color: l.you ? "var(--coral)" : "var(--paper)",
-              fontWeight: l.you ? 700 : 400,
-            }}
-          >
-            {l.name}
-            {l.you && " ← you"}
-          </span>
-          <span className="lb-xp">{l.xp} XP</span>
-        </div>
-      ))}
-    </div>
-  );
-}
+// ==========================================================================
+// DMs — latest 3 conversations
+// ==========================================================================
 
 export function DMsWidget() {
+  const { profile } = useAuthContext();
+  const [convs, setConvs] = useState<Conversation[] | null>(null);
+
+  useEffect(() => {
+    if (!profile) return;
+    (async () => {
+      try {
+        const list = await listMyConversations(profile.uid);
+        setConvs(list.slice(0, 3));
+      } catch {
+        setConvs([]);
+      }
+    })();
+  }, [profile]);
+
+  if (!profile) return null;
+
   return (
     <div className="widget">
       <div className="widget-head">
         <span className="ttl">DMs</span>
-        <span className="label">
-          {MOCK_DMS.filter((d) => d.unread).length} UNREAD
-        </span>
+        <Link
+          href="/dms"
+          className="label"
+          style={{ color: "var(--hazard)" }}
+        >
+          OPEN →
+        </Link>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {MOCK_DMS.map((c) => (
-          <div
-            key={c.nm}
-            style={{
-              display: "flex",
-              gap: 10,
-              alignItems: "center",
-              padding: "6px 0",
-              borderBottom: "1px dashed var(--ink-3)",
-            }}
-          >
+      {convs === null ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          {[1, 2].map((i) => (
             <div
+              key={i}
+              className="animate-pulse"
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                background: c.color,
-                color: "var(--ink)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "var(--display)",
-                fontSize: 13,
-                flexShrink: 0,
+                height: 38,
+                background: "var(--ink-3)",
+                borderRadius: 6,
               }}
-            >
-              {c.avatar}
-            </div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div
+            />
+          ))}
+        </div>
+      ) : convs.length === 0 ? (
+        <p className="dim small" style={{ margin: 0 }}>
+          No conversations yet. Message someone from Nearby or Friends.
+        </p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {convs.map((c) => {
+            const otherAlias =
+              c.userA === profile.uid ? c.aliasB : c.aliasA;
+            const otherColor =
+              c.userA === profile.uid ? c.aliasColorB : c.aliasColorA;
+            return (
+              <Link
+                key={c.id}
+                href={`/dms/${c.id}`}
                 style={{
-                  fontSize: 13,
-                  color: c.unread ? "var(--paper)" : "var(--paper-dim)",
-                  fontWeight: c.unread ? 600 : 400,
+                  display: "flex",
+                  gap: 10,
+                  alignItems: "center",
+                  padding: "6px 0",
+                  borderBottom: "1px dashed var(--ink-3)",
+                  textDecoration: "none",
+                  color: "inherit",
                 }}
               >
-                {c.nm}
-              </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "var(--paper-dim)",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {c.preview}
-              </div>
-            </div>
-            {c.unread && (
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "var(--coral)",
-                }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background:
+                      otherColor ?? aliasColor(otherAlias.toLowerCase()),
+                    color: "var(--ink)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: "var(--display)",
+                    fontSize: 13,
+                    flexShrink: 0,
+                  }}
+                >
+                  {aliasInitials(otherAlias)}
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: "var(--paper)",
+                      fontWeight: 600,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    @{otherAlias}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--paper-dim)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {c.lastMessage ?? "No messages yet."}
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

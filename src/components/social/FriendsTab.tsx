@@ -22,6 +22,7 @@ import {
 import { Friendship, TrustLevel } from "@/lib/types";
 import { aliasColor, aliasInitials } from "@/lib/social/aliases";
 import { Button, Tag } from "@/components/ui/primitives";
+import FriendSearch from "./FriendSearch";
 
 interface State {
   friends: Friendship[];
@@ -149,6 +150,8 @@ export default function FriendsTab() {
           {error}
         </div>
       )}
+
+      <FriendSearch onAfterAction={refresh} />
 
       {/* Incoming */}
       <SectionHead

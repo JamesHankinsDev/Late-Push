@@ -50,6 +50,33 @@ export async function getPublicProfile(
 }
 
 /**
+ * Resolve an alias (case-insensitive) to a public profile. Respects the
+ * target's `profileLookupByHandle` privacy flag — returns null if they've
+ * opted out of alias search even if the alias exists. Also returns null
+ * when the viewer has blocked (or been blocked by) the target.
+ */
+export async function findPublicProfileByAlias(
+  alias: string,
+  viewerUid: string
+): Promise<PublicProfile | null> {
+  const { getUidForAlias } = await import("./aliases");
+  const uid = await getUidForAlias(alias);
+  if (!uid) return null;
+  if (uid === viewerUid) return null;
+
+  const [pub, blocked] = await Promise.all([
+    getPublicProfile(uid),
+    blockedUidsFor(viewerUid),
+  ]);
+  if (!pub) return null;
+  if (!pub.privacy.socialEnabled) return null;
+  if (!pub.privacy.profileLookupByHandle) return null;
+  if (blocked.has(uid)) return null;
+
+  return pub;
+}
+
+/**
  * Fetch Nearby candidates: other users whose home spot is within `radiusMi`
  * of the viewer's home spot, who are discoverable, and who haven't been
  * blocked either direction. Excludes self.
