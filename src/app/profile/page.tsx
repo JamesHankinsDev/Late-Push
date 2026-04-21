@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useAuthContext } from "@/components/AuthProvider";
-import { getUserSessions } from "@/lib/sources/firestore";
-import { Session, STATUS_RANK, TrickStatus } from "@/lib/types";
+import { STATUS_RANK, TrickStatus } from "@/lib/types";
 import { TIERS, TRICKS, getEffectiveStatus, getTrickById } from "@/lib/curriculum";
 import { BADGES, isBadgeEarned } from "@/lib/badges";
 import { computeStreak, daysSince } from "@/lib/stats";
@@ -37,16 +36,10 @@ function handleFromEmail(email: string | undefined): string {
 }
 
 export default function ProfilePage() {
-  const { profile, signOut } = useAuthContext();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { profile, sessions, signOut, profileLoading, sessionsLoading } =
+    useAuthContext();
 
-  useEffect(() => {
-    if (!profile) return;
-    getUserSessions(profile.uid)
-      .then(setSessions)
-      .finally(() => setLoading(false));
-  }, [profile]);
+  const loading = profileLoading || sessionsLoading || !profile;
 
   const trickProgress = useMemo(() => profile?.trickProgress ?? {}, [profile]);
 

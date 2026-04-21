@@ -3,17 +3,21 @@
 import { createContext, useContext, ReactNode } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { User } from "firebase/auth";
-import { UserProfile } from "@/lib/types";
+import { Session, UserProfile } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
+  sessions: Session[];
   loading: boolean;
+  profileLoading: boolean;
+  sessionsLoading: boolean;
   signIn: (email: string, password: string) => Promise<unknown>;
   signUp: (email: string, password: string) => Promise<unknown>;
   signInWithGoogle: () => Promise<unknown>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  refreshSessions: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);

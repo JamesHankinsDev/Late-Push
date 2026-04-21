@@ -22,7 +22,7 @@ const OUTCOME_TO_PREFILL: Record<
 };
 
 export default function NewSessionPage() {
-  const { profile } = useAuthContext();
+  const { profile, refreshSessions } = useAuthContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -75,6 +75,10 @@ export default function NewSessionPage() {
         // Save coach response to session
         await updateSession(sessionId, { coachResponse: data.response });
       }
+
+      // Invalidate the shared sessions cache so dashboard/profile reflect
+      // the new session on their next render.
+      await refreshSessions();
     } catch (error) {
       console.error("Error saving session:", error);
     } finally {

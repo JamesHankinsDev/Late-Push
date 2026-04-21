@@ -27,16 +27,17 @@ export default function Nav() {
   const pathname = usePathname();
   const { profile, signOut } = useAuthContext();
 
-  if (!profile) return null;
-
   // Progress within the current tier drives the nav bar — lightweight stand-in
-  // for the design's XP bar until a real XP system exists.
-  const currentTier = profile.currentTier ?? 0;
+  // for the design's XP bar until a real XP system exists. Renders a dimmed
+  // skeleton while the profile doc is still loading so the rail is never blank.
+  const currentTier = profile?.currentTier ?? 0;
   const tierTricks = TRICKS.filter((t) => t.tier === currentTier);
-  const landedInTier = tierTricks.filter((t) => {
-    const s = profile.trickProgress?.[t.id]?.status;
-    return s === "landed_once" || s === "consistent" || s === "mastered";
-  }).length;
+  const landedInTier = profile
+    ? tierTricks.filter((t) => {
+        const s = profile.trickProgress?.[t.id]?.status;
+        return s === "landed_once" || s === "consistent" || s === "mastered";
+      }).length
+    : 0;
   const tierPct = tierTricks.length
     ? Math.round((landedInTier / tierTricks.length) * 100)
     : 0;
@@ -85,17 +86,25 @@ export default function Nav() {
         }}
       >
         <div className="label" style={{ marginBottom: 6 }}>
-          Tier {currentTier} · {landedInTier} / {tierTricks.length} landed
+          {profile
+            ? `Tier ${currentTier} · ${landedInTier} / ${tierTricks.length} landed`
+            : "LOADING…"}
         </div>
         <Bar value={tierPct} />
       </div>
 
       <div className="nav-profile">
-        <div className="avatar">{initialsFrom(profile.displayName)}</div>
+        <div className="avatar">
+          {profile ? initialsFrom(profile.displayName) : "…"}
+        </div>
         <div className="meta">
-          <span className="name">{profile.displayName || "You"}</span>
+          <span className="name">
+            {profile?.displayName || (profile ? "You" : "Loading…")}
+          </span>
           <span className="xp">
-            TIER {currentTier} · {tierLabel || tierName.toUpperCase()}
+            {profile
+              ? `TIER ${currentTier} · ${tierLabel || tierName.toUpperCase()}`
+              : ""}
           </span>
         </div>
       </div>

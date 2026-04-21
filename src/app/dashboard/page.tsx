@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuthContext } from "@/components/AuthProvider";
-import { getUserSessions } from "@/lib/sources/firestore";
 import { Session, STATUS_RANK } from "@/lib/types";
 import { getTrickById } from "@/lib/curriculum";
 import {
@@ -25,18 +24,13 @@ import MeetupsPreview from "@/components/home/MeetupsPreview";
 import CoachResponse from "@/components/sessions/CoachResponse";
 
 export default function DashboardPage() {
-  const { profile } = useAuthContext();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { profile, sessions, profileLoading, sessionsLoading } = useAuthContext();
   const [monthlySummary, setMonthlySummary] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(false);
 
-  useEffect(() => {
-    if (!profile) return;
-    getUserSessions(profile.uid)
-      .then(setSessions)
-      .finally(() => setLoading(false));
-  }, [profile]);
+  // Loading gate: wait for profile + sessions on the *first* load. Subsequent
+  // navigations back to the dashboard reuse the cached values instantly.
+  const loading = profileLoading || sessionsLoading || !profile;
 
   const trickProgress = useMemo(() => profile?.trickProgress ?? {}, [profile]);
 

@@ -10,6 +10,9 @@ function ShellInner({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isFullscreenRoute = pathname === "/onboarding";
 
+  // Short auth-unknown window only — once we know whether there's a user,
+  // render the shell immediately. Profile/sessions load in parallel and
+  // each page handles its own loading state for data-dependent sections.
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
