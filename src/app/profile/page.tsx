@@ -9,6 +9,7 @@ import { Session, STATUS_RANK, TrickStatus } from "@/lib/types";
 import { TIERS, TRICKS, getEffectiveStatus, getTrickById } from "@/lib/curriculum";
 import { BADGES, isBadgeEarned } from "@/lib/badges";
 import { computeStreak, daysSince } from "@/lib/stats";
+import { STANCE_LABEL } from "@/lib/profile/options";
 import { Button, Bar, Tag, Eyebrow } from "@/components/ui/primitives";
 
 const XP_BY_STATUS: Record<TrickStatus, number> = {
@@ -116,27 +117,66 @@ export default function ProfilePage() {
               <span style={{ color: "var(--hazard)" }}>/</span> TIER {currentTier}
             </h2>
             <div className="handle">
-              {handle} · STANCE UNSET · JOINED {format(
+              {handle} ·{" "}
+              {profile.stance ? STANCE_LABEL[profile.stance] : "STANCE UNSET"} ·
+              JOINED{" "}
+              {format(
                 new Date(profile.createdAt),
                 "MMM yyyy"
               ).toUpperCase()}
             </div>
             <p className="bio">
-              Tell Late Push your story — stance, why you started, what you
-              want to land. Profile editing lands in a future update.
+              {profile.bio ||
+                "No bio yet. Click Edit profile to tell Late Push your story — why you started, what you want to land."}
             </p>
+            {(profile.goals?.length ?? 0) > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 6,
+                  marginTop: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span
+                  className="label"
+                  style={{ alignSelf: "center", marginRight: 4 }}
+                >
+                  GOALS →
+                </span>
+                {profile.goals!.map((g) => (
+                  <Tag key={g} tone="yellow">
+                    {g}
+                  </Tag>
+                ))}
+              </div>
+            )}
             <div
               style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}
             >
-              <Tag tone="outline">PROGRESSION</Tag>
-              <Tag tone="outline">CHILL</Tag>
-              <Tag tone="outline">ADD YOUR VIBES</Tag>
+              {(profile.vibe?.length ?? 0) > 0 ? (
+                <>
+                  <span
+                    className="label"
+                    style={{ alignSelf: "center", marginRight: 4 }}
+                  >
+                    VIBE →
+                  </span>
+                  {profile.vibe!.map((v) => (
+                    <Tag key={v} tone="outline">
+                      {v}
+                    </Tag>
+                  ))}
+                </>
+              ) : (
+                <Tag tone="outline">ADD YOUR VIBES</Tag>
+              )}
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Button variant="primary" disabled>
-              Edit profile
-            </Button>
+            <Link href="/profile/edit">
+              <Button variant="primary">Edit profile</Button>
+            </Link>
             <Button variant="ghost" size="sm" onClick={signOut}>
               Sign out
             </Button>
