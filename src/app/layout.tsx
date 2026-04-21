@@ -1,7 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Bebas_Neue, Anton, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import ClientShell from "@/components/ClientShell";
+
+const bebas = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-bebas",
+  display: "swap",
+});
+
+const anton = Anton({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-anton",
+  display: "swap",
+});
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -9,9 +23,9 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-const inter = Inter({
+const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-jetbrains",
   display: "swap",
 });
 
@@ -22,7 +36,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Late Push — Skateboarding for Adults",
+  title: "Late Push — Skateboarding for people with jobs",
   description:
     "A structured skateboarding learning platform designed for adult beginners. Learn to skate with a curriculum, session logging, AI coaching, and spot finding.",
 };
@@ -43,7 +57,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} font-body antialiased bg-concrete-950 text-concrete-100 concrete-bg`}
+        className={`${bebas.variable} ${anton.variable} ${spaceGrotesk.variable} ${jetbrains.variable} type-condensed density-cozy antialiased`}
       >
         <ClientShell>{children}</ClientShell>
       </body>

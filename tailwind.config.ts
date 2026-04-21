@@ -9,36 +9,57 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // "concrete" namespace kept for class compatibility but mapped to wood/earth tones
-        concrete: {
-          50: "#faf3e3",   // parchment
-          100: "#f0e2bf",  // cream
-          200: "#dec99a",  // light sand
-          300: "#c4a574",  // sand
-          400: "#a08056",  // tan oak
-          500: "#7a5f3f",  // light oak
-          600: "#5e4830",  // oak
-          700: "#3f2f1f",  // walnut
-          800: "#2a1f14",  // dark walnut
-          900: "#1a130b",  // espresso
-          950: "#0d0905",  // charred
+        // New Late Push palette
+        ink: {
+          DEFAULT: "#0e0d0c",
+          2: "#1a1816",
+          3: "#24211e",
         },
-        // "skate" accents kept for class compatibility but mapped to natural earth accents
+        paper: {
+          DEFAULT: "#f2ece0",
+          2: "#e4dccb",
+          3: "#c9bfa8",
+          dim: "#8a8273",
+        },
+        hazard: {
+          DEFAULT: "#f5d400",
+          deep: "#d9bc00",
+        },
+        coral: "#ff5a3c",
+        mint: "#78d19a",
+        violet: "#b38cff",
+        sky: "#7ec7ff",
+        brick: "#c93a2a",
+
+        // Back-compat: map old names to the new palette so pages not yet
+        // migrated still render with the new theme rather than breaking.
+        // These get removed once every page is migrated off them.
+        concrete: {
+          50: "#f2ece0",
+          100: "#f2ece0",
+          200: "#e4dccb",
+          300: "#c9bfa8",
+          400: "#8a8273",
+          500: "#8a8273",
+          600: "#5a5448",
+          700: "#24211e",
+          800: "#1a1816",
+          900: "#1a1816",
+          950: "#0e0d0c",
+        },
         skate: {
-          lime: "#9caf5e",    // moss / sage (success, landed)
-          orange: "#c97142",  // rust / terracotta (in progress)
-          red: "#a73e2a",     // brick (warnings, risk)
-          cyan: "#d4a042",    // amber / honey (ready, info)
-          purple: "#8a5670",  // dusty plum (AI coach accent)
+          lime: "#78d19a",
+          orange: "#ff5a3c",
+          red: "#c93a2a",
+          cyan: "#7ec7ff",
+          purple: "#b38cff",
         },
       },
       fontFamily: {
-        display: ["var(--font-space-grotesk)", "sans-serif"],
-        body: ["var(--font-inter)", "sans-serif"],
-      },
-      backgroundImage: {
-        "wood-grain":
-          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.4' numOctaves='3' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.25 0 0 0 0 0.1 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23w)'/%3E%3C/svg%3E\")",
+        display: ["var(--font-bebas)", "Bebas Neue", "sans-serif"],
+        hammer: ["var(--font-anton)", "Anton", "sans-serif"],
+        body: ["var(--font-space-grotesk)", "Space Grotesk", "sans-serif"],
+        mono: ["var(--font-jetbrains)", "JetBrains Mono", "ui-monospace", "monospace"],
       },
     },
   },

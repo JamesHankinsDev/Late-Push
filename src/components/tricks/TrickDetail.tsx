@@ -1,8 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Trick, TrickStatus, YouTubeVideo } from "@/lib/types";
+import { Trick, TrickStatus, YouTubeVideo, STATUS_LABELS } from "@/lib/types";
 import { getPrerequisiteTricks } from "@/lib/curriculum";
+
+const STATUS_OPTIONS: TrickStatus[] = [
+  "not_started",
+  "practicing",
+  "landed_once",
+  "consistent",
+  "mastered",
+];
+
+const STATUS_COLORS: Record<TrickStatus, string> = {
+  locked: "bg-concrete-700 text-concrete-500",
+  not_started: "bg-concrete-800 text-concrete-300 border-concrete-700",
+  practicing: "bg-skate-orange/20 text-skate-orange border-skate-orange",
+  landed_once: "bg-skate-cyan/20 text-skate-cyan border-skate-cyan",
+  consistent: "bg-skate-lime/20 text-skate-lime border-skate-lime",
+  mastered: "bg-skate-lime/40 text-white border-skate-lime",
+};
 
 interface TrickDetailProps {
   trick: Trick;
@@ -43,9 +60,9 @@ export default function TrickDetail({
             <h2 className="font-display text-xl font-bold text-white">
               {trick.name}
             </h2>
-            <div className="flex gap-3 text-xs mt-1">
+            <div className="flex gap-3 text-xs mt-1 flex-wrap">
               <span className="text-concrete-400">
-                Stage {trick.stage}
+                Tier {trick.tier}
               </span>
               <span className="text-concrete-400">
                 Difficulty: <span className="text-white">{trick.difficulty}/10</span>
@@ -59,6 +76,11 @@ export default function TrickDetail({
               }`}>
                 {trick.injuryRisk} risk
               </span>
+              {trick.estimatedAdultLearningTime && (
+                <span className="text-concrete-400">
+                  ⏱ <span className="text-concrete-200">{trick.estimatedAdultLearningTime}</span>
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -111,24 +133,32 @@ export default function TrickDetail({
             </ul>
           </div>
 
-          {/* Status actions */}
-          <div className="flex gap-2">
-            {status !== "in_progress" && (
-              <button
-                onClick={() => onStatusChange(trick.id, "in_progress")}
-                className="flex-1 py-2 rounded-lg bg-skate-orange text-concrete-950 font-bold text-sm hover:bg-skate-orange/90 transition-colors"
-              >
-                Start Learning
-              </button>
-            )}
-            {status !== "landed" && (
-              <button
-                onClick={() => onStatusChange(trick.id, "landed")}
-                className="flex-1 py-2 rounded-lg bg-skate-lime text-concrete-950 font-bold text-sm hover:bg-skate-lime/90 transition-colors"
-              >
-                Mark as Landed
-              </button>
-            )}
+          {/* Status segmented control */}
+          <div>
+            <h3 className="text-xs font-bold text-concrete-400 uppercase tracking-wider mb-2">
+              Where are you with this trick?
+            </h3>
+            <div className="grid grid-cols-5 gap-1">
+              {STATUS_OPTIONS.map((opt) => {
+                const isActive = status === opt;
+                return (
+                  <button
+                    key={opt}
+                    onClick={() => onStatusChange(trick.id, opt)}
+                    className={`text-[10px] sm:text-xs py-2 px-1 rounded border transition-all ${
+                      isActive
+                        ? STATUS_COLORS[opt] + " font-bold"
+                        : "border-concrete-700 text-concrete-500 hover:border-concrete-500"
+                    }`}
+                  >
+                    {STATUS_LABELS[opt]}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-concrete-500 mt-2">
+              Self-reported. Trust yourself. Nobody&apos;s watching.
+            </p>
           </div>
 
           {/* YouTube Videos */}

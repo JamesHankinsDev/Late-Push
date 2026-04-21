@@ -11,8 +11,26 @@ function ShellInner({ children }: { children: ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-concrete-700 border-t-skate-lime rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-concrete-400 font-display text-sm">Loading...</p>
+          <div
+            className="mx-auto mb-4 animate-spin"
+            style={{
+              width: 48,
+              height: 48,
+              border: "4px solid var(--ink-3)",
+              borderTopColor: "var(--hazard)",
+              borderRadius: "50%",
+            }}
+          />
+          <p
+            style={{
+              color: "var(--paper-dim)",
+              fontFamily: "var(--display)",
+              fontSize: 14,
+              letterSpacing: "0.06em",
+            }}
+          >
+            LOADING...
+          </p>
         </div>
       </div>
     );
@@ -23,12 +41,12 @@ function ShellInner({ children }: { children: ReactNode }) {
   }
 
   return (
-    <>
+    <div className="app">
       <Nav />
-      <main className="md:ml-56 pb-20 md:pb-0 relative z-10 min-h-screen">
-        {children}
+      <main className="main">
+        <div className="main-inner">{children}</div>
       </main>
-    </>
+    </div>
   );
 }
 

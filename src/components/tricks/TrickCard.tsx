@@ -1,6 +1,6 @@
 "use client";
 
-import { Trick, TrickStatus } from "@/lib/types";
+import { Trick, TrickStatus, STATUS_RANK, STATUS_LABELS } from "@/lib/types";
 
 interface TrickCardProps {
   trick: Trick;
@@ -16,11 +16,31 @@ const riskColors = {
   high: "text-skate-red",
 };
 
-const statusBg = {
+const statusBg: Record<TrickStatus, string> = {
   locked: "bg-concrete-900 border-concrete-700",
-  in_progress: "bg-concrete-850 border-skate-orange",
-  landed: "bg-concrete-850 border-skate-lime",
+  not_started: "bg-concrete-900 border-concrete-700",
+  practicing: "bg-concrete-800/70 border-skate-orange/60",
+  landed_once: "bg-concrete-800/70 border-skate-cyan/60",
+  consistent: "bg-concrete-800/70 border-skate-lime/60",
+  mastered: "bg-concrete-800/70 border-skate-lime",
 };
+
+function getNextAction(
+  status: TrickStatus
+): { label: string; nextStatus: TrickStatus } | null {
+  switch (status) {
+    case "not_started":
+      return { label: "Start Practicing", nextStatus: "practicing" };
+    case "practicing":
+      return { label: "Landed Once!", nextStatus: "landed_once" };
+    case "landed_once":
+      return { label: "It's Consistent", nextStatus: "consistent" };
+    case "consistent":
+      return { label: "Mastered", nextStatus: "mastered" };
+    default:
+      return null;
+  }
+}
 
 export default function TrickCard({
   trick,
@@ -30,6 +50,7 @@ export default function TrickCard({
   onClick,
 }: TrickCardProps) {
   const isLocked = status === "locked" && !unlockable;
+  const nextAction = getNextAction(status);
 
   return (
     <div
@@ -39,10 +60,9 @@ export default function TrickCard({
       } ${
         isLocked
           ? "opacity-40 cursor-not-allowed"
-          : "cursor-pointer hover:border-concrete-500 hover:scale-[1.02]"
+          : "cursor-pointer hover:border-concrete-500 hover:scale-[1.01]"
       }`}
     >
-      {/* Status indicator */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-display font-bold text-base text-white">
           {trick.name}
@@ -65,38 +85,34 @@ export default function TrickCard({
             {trick.injuryRisk}
           </span>
         </span>
+        {trick.estimatedAdultLearningTime && (
+          <span className="text-concrete-400 hidden sm:inline">
+            ⏱{" "}
+            <span className="text-concrete-200">
+              {trick.estimatedAdultLearningTime}
+            </span>
+          </span>
+        )}
       </div>
 
-      {/* Quick status buttons */}
       {!isLocked && onStatusChange && (
-        <div className="flex gap-2 mt-3 pt-3 border-t border-concrete-700">
-          {status !== "in_progress" && (
+        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-concrete-700">
+          {nextAction && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onStatusChange(trick.id, "in_progress");
+                onStatusChange(trick.id, nextAction.nextStatus);
               }}
-              className="text-xs px-3 py-1 rounded bg-skate-orange/20 text-skate-orange hover:bg-skate-orange/30 transition-colors"
+              className="text-xs px-3 py-1 rounded bg-skate-lime/20 text-skate-lime hover:bg-skate-lime/30 transition-colors font-medium"
             >
-              Start Learning
+              {nextAction.label}
             </button>
           )}
-          {status !== "landed" && (
+          {STATUS_RANK[status] > STATUS_RANK.not_started && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onStatusChange(trick.id, "landed");
-              }}
-              className="text-xs px-3 py-1 rounded bg-skate-lime/20 text-skate-lime hover:bg-skate-lime/30 transition-colors"
-            >
-              Mark Landed
-            </button>
-          )}
-          {status !== "locked" && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusChange(trick.id, "locked");
+                onStatusChange(trick.id, "not_started");
               }}
               className="text-xs px-3 py-1 rounded bg-concrete-700 text-concrete-400 hover:bg-concrete-600 transition-colors"
             >
@@ -116,30 +132,28 @@ function StatusBadge({
   status: TrickStatus;
   unlockable: boolean;
 }) {
-  if (status === "landed") {
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-full bg-skate-lime/20 text-skate-lime font-medium">
-        Landed
-      </span>
-    );
-  }
-  if (status === "in_progress") {
-    return (
-      <span className="text-xs px-2 py-0.5 rounded-full bg-skate-orange/20 text-skate-orange font-medium">
-        Learning
-      </span>
-    );
-  }
-  if (unlockable) {
+  const styles: Record<TrickStatus, string> = {
+    locked: "bg-concrete-700 text-concrete-500",
+    not_started: "bg-concrete-700 text-concrete-300",
+    practicing: "bg-skate-orange/20 text-skate-orange",
+    landed_once: "bg-skate-cyan/20 text-skate-cyan",
+    consistent: "bg-skate-lime/20 text-skate-lime",
+    mastered: "bg-skate-lime/30 text-skate-lime border border-skate-lime",
+  };
+
+  if (status === "locked" && unlockable) {
     return (
       <span className="text-xs px-2 py-0.5 rounded-full bg-skate-cyan/20 text-skate-cyan font-medium">
         Ready
       </span>
     );
   }
+
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-concrete-700 text-concrete-500 font-medium">
-      Locked
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status]}`}
+    >
+      {STATUS_LABELS[status]}
     </span>
   );
 }

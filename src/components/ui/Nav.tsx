@@ -3,14 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthContext } from "@/components/AuthProvider";
+import { Bar } from "@/components/ui/primitives";
+import { TIERS, TRICKS } from "@/lib/curriculum";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: "📊" },
-  { href: "/tricks", label: "Tricks", icon: "🛹" },
-  { href: "/sessions/new", label: "Log Session", icon: "+" },
-  { href: "/sessions", label: "Sessions", icon: "📝" },
-  { href: "/spots", label: "Spots", icon: "📍" },
+  { href: "/dashboard", label: "TODAY", n: "01" },
+  { href: "/tricks", label: "PATH", n: "02" },
+  { href: "/social", label: "SOCIAL", n: "03" },
+  { href: "/profile", label: "PROFILE", n: "04" },
 ];
+
+const TIER_LABELS = ["STARTER", "FOUNDATIONS", "MANEUVERING", "FIRST TRICKS", "INTERMEDIATE"];
+
+function initialsFrom(name: string | null | undefined): string {
+  if (!name) return "YO";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase() || "YO";
+}
 
 export default function Nav() {
   const pathname = usePathname();
@@ -18,69 +29,95 @@ export default function Nav() {
 
   if (!profile) return null;
 
-  return (
-    <>
-      {/* Desktop sidebar */}
-      <nav className="hidden md:flex flex-col fixed left-0 top-0 h-full w-56 bg-concrete-900 border-r border-concrete-700 z-40">
-        <div className="p-4 border-b border-concrete-700">
-          <Link href="/dashboard" className="block">
-            <h1 className="font-display text-xl font-bold text-skate-lime tracking-tight">
-              LATE<br />PUSH
-            </h1>
-          </Link>
-        </div>
+  // Progress within the current tier drives the nav bar — lightweight stand-in
+  // for the design's XP bar until a real XP system exists.
+  const currentTier = profile.currentTier ?? 0;
+  const tierTricks = TRICKS.filter((t) => t.tier === currentTier);
+  const landedInTier = tierTricks.filter((t) => {
+    const s = profile.trickProgress?.[t.id]?.status;
+    return s === "landed_once" || s === "consistent" || s === "mastered";
+  }).length;
+  const tierPct = tierTricks.length
+    ? Math.round((landedInTier / tierTricks.length) * 100)
+    : 0;
+  const tierLabel = TIER_LABELS[currentTier] ?? "";
+  const tierName = TIERS[currentTier]?.name ?? "";
 
-        <div className="flex-1 py-4">
-          {NAV_ITEMS.map((item) => (
+  return (
+    <nav className="nav">
+      <Link href="/dashboard" className="logo">
+        LATE<span className="accent">/</span>PUSH
+      </Link>
+      <div className="logo-sub">Skateboarding for people with jobs</div>
+
+      <div className="nav-items">
+        {NAV_ITEMS.map((item) => {
+          const active =
+            pathname === item.href || pathname.startsWith(item.href + "/");
+          return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
-                pathname === item.href || pathname.startsWith(item.href + "/")
-                  ? "text-skate-lime bg-concrete-800 border-r-2 border-skate-lime"
-                  : "text-concrete-300 hover:text-white hover:bg-concrete-800"
-              }`}
+              className={`nav-item ${active ? "active" : ""}`}
             >
-              <span className="text-lg">{item.icon}</span>
+              <span
+                style={{
+                  fontFamily: "var(--mono)",
+                  fontSize: 10,
+                  opacity: 0.6,
+                  width: 22,
+                }}
+              >
+                {item.n}
+              </span>
               {item.label}
             </Link>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
-        <div className="p-4 border-t border-concrete-700">
-          <p className="text-xs text-concrete-400 mb-2 truncate">
-            {profile.displayName}
-          </p>
-          <button
-            onClick={signOut}
-            className="text-xs text-concrete-500 hover:text-skate-red transition-colors"
-          >
-            Sign Out
-          </button>
+      <div
+        style={{
+          marginTop: 20,
+          padding: "10px 12px",
+          border: "1px dashed var(--ink-3)",
+          borderRadius: 10,
+        }}
+      >
+        <div className="label" style={{ marginBottom: 6 }}>
+          Tier {currentTier} · {landedInTier} / {tierTricks.length} landed
         </div>
-      </nav>
+        <Bar value={tierPct} />
+      </div>
 
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-concrete-900 border-t border-concrete-700 z-40 safe-area-bottom">
-        <div className="flex justify-around items-center h-16">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 ${
-                pathname === item.href || pathname.startsWith(item.href + "/")
-                  ? "text-skate-lime"
-                  : "text-concrete-400"
-              }`}
-            >
-              <span className={`text-lg ${item.label === "Log Session" ? "bg-skate-lime text-concrete-950 rounded-full w-8 h-8 flex items-center justify-center text-xl font-bold" : ""}`}>
-                {item.icon}
-              </span>
-              <span className="text-[10px]">{item.label}</span>
-            </Link>
-          ))}
+      <div className="nav-profile">
+        <div className="avatar">{initialsFrom(profile.displayName)}</div>
+        <div className="meta">
+          <span className="name">{profile.displayName || "You"}</span>
+          <span className="xp">
+            TIER {currentTier} · {tierLabel || tierName.toUpperCase()}
+          </span>
         </div>
-      </nav>
-    </>
+      </div>
+
+      <button
+        onClick={signOut}
+        style={{
+          marginTop: 10,
+          padding: "6px 10px",
+          background: "transparent",
+          color: "var(--paper-dim)",
+          border: "1px dashed var(--ink-3)",
+          borderRadius: 4,
+          fontFamily: "var(--mono)",
+          fontSize: 10,
+          letterSpacing: "0.08em",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        SIGN OUT
+      </button>
+    </nav>
   );
 }

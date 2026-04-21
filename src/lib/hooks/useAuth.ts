@@ -33,8 +33,9 @@ export function useAuth() {
             displayName:
               firebaseUser.displayName ?? firebaseUser.email?.split("@")[0] ?? "Skater",
             createdAt: new Date().toISOString(),
-            currentStage: 1,
+            currentTier: 0,
             trickProgress: {},
+            badges: [],
           };
           await createUserProfile(newProfile);
           setProfile(newProfile);

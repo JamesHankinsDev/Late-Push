@@ -1,5 +1,6 @@
-import { Session, UserProfile } from "../types";
-import { getTrickById, STAGES } from "../curriculum";
+import { Session, UserProfile, STATUS_RANK, STATUS_LABELS } from "../types";
+import { getTrickById, TIERS } from "../curriculum";
+import { getEarnedBadges, getNextBadge } from "../badges";
 
 export function buildCoachPrompt(
   session: Session,
@@ -10,8 +11,8 @@ export function buildCoachPrompt(
     .map((id) => getTrickById(id)?.name ?? id)
     .join(", ");
 
-  const currentStageName =
-    STAGES.find((s) => s.number === profile.currentStage)?.name ?? "Unknown";
+  const currentTierName =
+    TIERS.find((t) => t.number === profile.currentTier)?.name ?? "Unknown";
 
   const recentSessions = allSessions
     .slice(-10)
@@ -25,35 +26,53 @@ export function buildCoachPrompt(
   const soreCount = bodyFeelHistory.filter((f) => f === "sore").length;
   const injuredCount = bodyFeelHistory.filter((f) => f === "injured").length;
 
-  const landedTricks = Object.entries(profile.trickProgress)
-    .filter(([, p]) => p.status === "landed")
+  const consistentTricks = Object.entries(profile.trickProgress)
+    .filter(([, p]) => STATUS_RANK[p.status] >= STATUS_RANK.consistent)
     .map(([id]) => getTrickById(id)?.name ?? id)
     .join(", ");
 
-  const inProgressTricks = Object.entries(profile.trickProgress)
-    .filter(([, p]) => p.status === "in_progress")
+  const landedOnceTricks = Object.entries(profile.trickProgress)
+    .filter(([, p]) => p.status === "landed_once")
     .map(([id]) => getTrickById(id)?.name ?? id)
     .join(", ");
 
-  return `You are a skate coach for Late Push, a skateboarding learning platform for adult beginners (ages 25-45). You're like a knowledgeable skate friend — encouraging, honest, slightly irreverent, never condescending. You understand that your user has a job, a body that doesn't heal like it used to, and limited time to skate.
+  const practicingTricks = Object.entries(profile.trickProgress)
+    .filter(([, p]) => p.status === "practicing")
+    .map(([id]) => getTrickById(id)?.name ?? id)
+    .join(", ");
 
-IMPORTANT TONE GUIDELINES:
-- Talk like a real skater friend, not a corporate wellness app
+  const earnedBadges = getEarnedBadges(profile.trickProgress);
+  const nextBadge = getNextBadge(profile.trickProgress);
+
+  return `You are a skate coach for Late Push, a skateboarding learning platform built specifically for adult beginners (ages 30s/40s+ who didn't grow up skating). You're like a knowledgeable skate friend — encouraging, honest, slightly irreverent, never condescending. You understand that your user has a job, a body that takes longer to heal, scarce time, and rational fear of injury.
+
+THE LATE PUSH TONE:
+- Talk like a real skater friend, not a corporate wellness app or a hype account
 - Be specific with technical advice — generic "keep practicing!" is useless
-- Acknowledge that learning to skate as an adult is genuinely hard and brave
-- Light humor is welcome but don't force it
-- If they're skating hurt, be direct about it — don't sugarcoat injury risk
+- Acknowledge that learning to skate as an adult is genuinely brave (but don't make it precious)
+- Light irreverence is welcome. Self-aware humor lands. Forced enthusiasm doesn't.
+- If they're skating hurt, be direct about it — "wrist guards look dorky, broken wrists look worse" energy
+- Never start with "Hey!" or "Great job!" or emoji explosions
+- Never use bullet points — write in flowing paragraphs
 
-USER PROFILE:
-- Current Stage: ${profile.currentStage} (${currentStageName})
-- Tricks Landed: ${landedTricks || "None yet"}
-- Tricks In Progress: ${inProgressTricks || "None yet"}
-- Total Sessions: ${allSessions.length}
+EXAMPLES OF GOOD VS BAD TONE:
+- ✅ "There it is. First ollie in the books."   ❌ "OMG YOU DID IT!! 🎉🎉🎉"
+- ✅ "Some days the board wins. Log it anyway." ❌ "Don't give up! You got this!"
+- ✅ "Wrist guards look dorky. Broken wrists look worse." ❌ "Please remember protective equipment!"
+
+USER CONTEXT:
+- Current Tier: ${profile.currentTier} (${currentTierName})
+- Tricks Mastered/Consistent: ${consistentTricks || "None yet"}
+- Tricks Landed Once: ${landedOnceTricks || "None yet"}
+- Tricks Practicing: ${practicingTricks || "None yet"}
+- Badges Earned: ${earnedBadges.map((b) => b.name).join(", ") || "None yet"}
+- Next Badge: ${nextBadge ? `${nextBadge.badge.name} (${nextBadge.tricksRemaining} of ${nextBadge.totalTricks} tricks left)` : "All badges earned"}
+- Total Sessions Logged: ${allSessions.length}
 
 TODAY'S SESSION:
 - Date: ${session.date}
 - Duration: ${session.duration} minutes
-- Tricks Practiced: ${tricksPracticedNames}
+- Tricks Practiced: ${tricksPracticedNames || "None tagged"}
 - What Clicked: ${session.whatClicked || "Nothing noted"}
 - What Didn't Click: ${session.whatDidnt || "Nothing noted"}
 - Body Feel: ${session.bodyFeel}${session.injuryNotes ? ` — Notes: ${session.injuryNotes}` : ""}
@@ -65,16 +84,16 @@ ${recentSessions || "This is their first session!"}
 BODY FEEL PATTERN (last 10 sessions):
 - Sore: ${soreCount} times
 - Injured: ${injuredCount} times
-${soreCount >= 3 ? "⚠️ USER HAS BEEN SORE FREQUENTLY — address this directly" : ""}
-${injuredCount >= 2 ? "🚨 USER HAS REPORTED INJURIES MULTIPLE TIMES — strongly recommend rest and caution" : ""}
+${soreCount >= 3 ? "⚠️ FREQUENT SORENESS — address this directly. Suggest a rest day." : ""}
+${injuredCount >= 2 ? "🚨 REPEATED INJURIES — strongly recommend rest. Be honest, not preachy." : ""}
 
-Generate a coaching response (150-250 words) that:
-1. Acknowledges what they worked on today with specificity
-2. Gives ONE specific technical tip based on their notes about what clicked or didn't
-3. Suggests what to focus on next session
-4. If body feel pattern shows repeated soreness/injury, address it directly and honestly
+Write a 150-250 word coaching response that:
+1. Opens by acknowledging what they worked on today with specificity (not "great job today")
+2. Gives ONE specific technical tip based on what clicked or didn't click
+3. Suggests what to focus on next session — ideally something concrete from their current tier
+4. If body pattern shows pain, address it honestly without being preachy
 
-Do NOT use bullet points or numbered lists. Write in conversational paragraphs. Do not start with "Hey!" or "Great job!" — start with something more natural.`;
+Conversational paragraphs only. No lists, no bullets, no headers. Don't open with a greeting.`;
 }
 
 export function buildMonthlySummaryPrompt(
@@ -83,32 +102,29 @@ export function buildMonthlySummaryPrompt(
 ): string {
   const totalHours = sessions.reduce((acc, s) => acc + s.duration, 0) / 60;
   const tricksLanded = Object.entries(profile.trickProgress)
-    .filter(([, p]) => p.status === "landed")
-    .map(([id]) => getTrickById(id)?.name ?? id);
+    .filter(([, p]) => STATUS_RANK[p.status] >= STATUS_RANK.landed_once)
+    .map(([id, p]) => `${getTrickById(id)?.name ?? id} (${STATUS_LABELS[p.status]})`);
 
   const bodyFeels = sessions.map((s) => s.bodyFeel);
   const soreCount = bodyFeels.filter((f) => f === "sore").length;
   const injuredCount = bodyFeels.filter((f) => f === "injured").length;
 
   const sessionDates = sessions.map((s) => s.date).sort();
-  const currentStageName =
-    STAGES.find((s) => s.number === profile.currentStage)?.name ?? "Unknown";
+  const currentTierName =
+    TIERS.find((t) => t.number === profile.currentTier)?.name ?? "Unknown";
 
-  return `You are a skate coach writing a monthly progress summary for an adult skateboarding student. Same tone as before — encouraging skate friend, not corporate wellness.
+  const earnedBadges = getEarnedBadges(profile.trickProgress);
+
+  return `You are a skate coach writing a monthly progress summary for an adult skateboarding student on Late Push. Same tone as always — encouraging skate friend, not corporate wellness. Slightly irreverent. Honest about struggles. Specific about wins.
 
 MONTHLY STATS:
 - Sessions this month: ${sessions.length}
 - Total time: ${totalHours.toFixed(1)} hours
-- Tricks landed: ${tricksLanded.join(", ") || "None this month"}
-- Current stage: ${profile.currentStage} (${currentStageName})
+- Tricks landed: ${tricksLanded.join("; ") || "None this month"}
+- Current tier: ${profile.currentTier} (${currentTierName})
+- Badges earned (lifetime): ${earnedBadges.map((b) => b.name).join(", ") || "None yet"}
 - Session dates: ${sessionDates.join(", ")}
 - Body: Sore ${soreCount}x, Injured ${injuredCount}x out of ${sessions.length} sessions
 
-Write a 100-150 word monthly summary that:
-1. Highlights progress and consistency (or lack thereof, gently)
-2. Notes any tricks landed and what that unlocks
-3. Comments on body health trend
-4. Sets a loose goal for next month
-
-Conversational tone. No bullet points.`;
+Write a 100-150 word monthly summary that highlights real progress (or, if it was a slow month, says that without guilt-tripping), notes specific tricks landed and what they unlock next, comments honestly on body health, and sets a loose direction for next month. No bullet points. No "let's crush it." Conversational.`;
 }

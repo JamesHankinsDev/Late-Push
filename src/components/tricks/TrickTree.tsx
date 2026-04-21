@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Trick, TrickStatus, TrickProgress } from "@/lib/types";
+import { Trick, TrickStatus, TrickProgress, STATUS_RANK } from "@/lib/types";
 import { TRICKS, isTrickUnlockable } from "@/lib/curriculum";
 
 interface TrickTreeProps {
@@ -10,26 +10,25 @@ interface TrickTreeProps {
 }
 
 export default function TrickTree({ trickProgress, onTrickClick }: TrickTreeProps) {
-  const stages = useMemo(() => {
+  const tiers = useMemo(() => {
     const grouped = new Map<number, Trick[]>();
     for (const trick of TRICKS) {
-      const list = grouped.get(trick.stage) ?? [];
+      const list = grouped.get(trick.tier) ?? [];
       list.push(trick);
-      grouped.set(trick.stage, list);
+      grouped.set(trick.tier, list);
     }
     return Array.from(grouped.entries()).sort(([a], [b]) => a - b);
   }, []);
 
   const getStatus = (trickId: string): TrickStatus => {
-    return trickProgress[trickId]?.status ?? "locked";
+    return trickProgress[trickId]?.status ?? "not_started";
   };
 
   return (
     <div className="space-y-1">
-      {stages.map(([stageNum, tricks]) => (
-        <div key={stageNum} className="relative">
-          {/* Stage connector line */}
-          {stageNum > 1 && (
+      {tiers.map(([tierNum, tricks]) => (
+        <div key={tierNum} className="relative">
+          {tierNum > 0 && (
             <div className="absolute left-1/2 -top-1 w-0.5 h-1 bg-concrete-700" />
           )}
 
@@ -37,26 +36,40 @@ export default function TrickTree({ trickProgress, onTrickClick }: TrickTreeProp
             {tricks.map((trick) => {
               const status = getStatus(trick.id);
               const unlockable = isTrickUnlockable(trick.id, trickProgress);
-              const isActive = status !== "locked" || unlockable;
+              const rank = STATUS_RANK[status];
+              const isLocked = !unlockable && rank <= STATUS_RANK.not_started;
+
+              const className = (() => {
+                if (status === "mastered") {
+                  return "border-skate-lime bg-skate-lime/40 text-white";
+                }
+                if (status === "consistent") {
+                  return "border-skate-lime bg-skate-lime/20 text-skate-lime";
+                }
+                if (status === "landed_once") {
+                  return "border-skate-cyan bg-skate-cyan/20 text-skate-cyan";
+                }
+                if (status === "practicing") {
+                  return "border-skate-orange bg-skate-orange/20 text-skate-orange";
+                }
+                if (unlockable) {
+                  return "border-concrete-500 bg-concrete-800 text-concrete-200 cursor-pointer hover:scale-110";
+                }
+                return "border-concrete-700 bg-concrete-900 text-concrete-600 cursor-not-allowed";
+              })();
 
               return (
                 <button
                   key={trick.id}
-                  onClick={() => isActive && onTrickClick?.(trick.id)}
-                  className={`relative w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center transition-all text-xs font-bold ${
-                    status === "landed"
-                      ? "border-skate-lime bg-skate-lime/20 text-skate-lime"
-                      : status === "in_progress"
-                      ? "border-skate-orange bg-skate-orange/20 text-skate-orange"
-                      : unlockable
-                      ? "border-skate-cyan bg-skate-cyan/10 text-skate-cyan cursor-pointer hover:scale-110"
-                      : "border-concrete-700 bg-concrete-900 text-concrete-600 cursor-not-allowed"
-                  }`}
-                  title={trick.name}
+                  onClick={() => !isLocked && onTrickClick?.(trick.id)}
+                  className={`relative w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center transition-all text-xs font-bold ${className}`}
+                  title={`${trick.name} — ${status.replace("_", " ")}`}
                 >
-                  {status === "landed" ? (
+                  {status === "mastered" || status === "consistent" ? (
                     "✓"
-                  ) : status === "in_progress" ? (
+                  ) : status === "landed_once" ? (
+                    "1"
+                  ) : status === "practicing" ? (
                     <span className="w-3 h-3 bg-skate-orange rounded-full animate-pulse" />
                   ) : (
                     trick.difficulty

@@ -121,12 +121,12 @@ export default function SessionForm({ onSubmit, loading }: SessionFormProps) {
         </button>
         {showTrickPicker && (
           <div className="mt-2 max-h-48 overflow-y-auto bg-concrete-800 border border-concrete-700 rounded-lg p-2 space-y-1">
-            {[1, 2, 3, 4, 5].map((stage) => (
-              <div key={stage}>
+            {[0, 1, 2, 3, 4].map((tier) => (
+              <div key={tier}>
                 <p className="text-[10px] font-bold text-concrete-500 uppercase tracking-wider px-2 py-1">
-                  Stage {stage}
+                  Tier {tier}
                 </p>
-                {TRICKS.filter((t) => t.stage === stage).map((trick) => (
+                {TRICKS.filter((t) => t.tier === tier).map((trick) => (
                   <button
                     key={trick.id}
                     type="button"

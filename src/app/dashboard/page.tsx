@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuthContext } from "@/components/AuthProvider";
 import { getUserSessions } from "@/lib/sources/firestore";
-import { Session } from "@/lib/types";
-import { STAGES, getTrickById } from "@/lib/curriculum";
+import { Session, STATUS_RANK } from "@/lib/types";
+import { TIERS, getTrickById } from "@/lib/curriculum";
+import { getEarnedBadges, getNextBadge, BADGES } from "@/lib/badges";
 import TrickTree from "@/components/tricks/TrickTree";
 import CoachResponse from "@/components/sessions/CoachResponse";
 import Link from "next/link";
@@ -26,7 +27,6 @@ export default function DashboardPage() {
 
   const trickProgress = useMemo(() => profile?.trickProgress ?? {}, [profile]);
 
-  // Stats
   const totalHours = useMemo(
     () => (sessions.reduce((acc, s) => acc + s.duration, 0) / 60).toFixed(1),
     [sessions]
@@ -34,7 +34,9 @@ export default function DashboardPage() {
 
   const tricksLanded = useMemo(
     () =>
-      Object.values(trickProgress).filter((p) => p.status === "landed").length,
+      Object.values(trickProgress).filter(
+        (p) => STATUS_RANK[p.status] >= STATUS_RANK.landed_once
+      ).length,
     [trickProgress]
   );
 
@@ -50,8 +52,8 @@ export default function DashboardPage() {
 
   const thisMonthTricksLanded = useMemo(() => {
     return Object.values(trickProgress).filter((p) => {
-      if (p.status !== "landed" || !p.landedDate) return false;
-      const d = new Date(p.landedDate);
+      if (!p.firstLandedDate) return false;
+      const d = new Date(p.firstLandedDate);
       return d >= startOfMonth(new Date()) && d <= endOfMonth(new Date());
     }).length;
   }, [trickProgress]);
@@ -79,7 +81,6 @@ export default function DashboardPage() {
     return count;
   }, [sessions]);
 
-  // Body health trend
   const bodyTrend = useMemo(() => {
     const recent = sessions.slice(0, 10);
     const soreCount = recent.filter((s) => s.bodyFeel === "sore").length;
@@ -90,9 +91,15 @@ export default function DashboardPage() {
     return { label: "Feeling good", color: "text-skate-lime", warning: false };
   }, [sessions]);
 
-  const currentStageName =
-    STAGES.find((s) => s.number === (profile?.currentStage ?? 1))?.name ??
-    "Foundation";
+  const earnedBadges = useMemo(
+    () => getEarnedBadges(trickProgress),
+    [trickProgress]
+  );
+  const nextBadge = useMemo(() => getNextBadge(trickProgress), [trickProgress]);
+
+  const currentTierName =
+    TIERS.find((t) => t.number === (profile?.currentTier ?? 0))?.name ??
+    "Pre-Board";
 
   const handleMonthlySummary = async () => {
     if (!profile || thisMonthSessions.length === 0) return;
@@ -135,14 +142,13 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-4xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display text-3xl font-bold text-white">
             {profile?.displayName ? `Hey, ${profile.displayName.split(" ")[0]}` : "Dashboard"}
           </h1>
           <p className="text-sm text-concrete-400 mt-1">
-            Stage {profile?.currentStage}: {currentStageName}
+            Tier {profile?.currentTier ?? 0}: {currentTierName}
           </p>
         </div>
         <Link
@@ -153,13 +159,13 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         <StatCard label="Total Hours" value={totalHours} icon="⏱" />
         <StatCard label="Tricks Landed" value={tricksLanded.toString()} icon="🛹" />
         <StatCard
-          label="Session Streak"
-          value={`${streak} wk${streak !== 1 ? "s" : ""}`}
+          label="Sessions Logged"
+          value={`${streak}`}
+          subtext={`recent week${streak !== 1 ? "s" : ""}`}
           icon="🔥"
         />
         <StatCard
@@ -170,7 +176,41 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Body health */}
+      {/* Badges */}
+      <div className="mb-8">
+        <h2 className="font-display text-lg font-bold text-white mb-3">Badges</h2>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+          {BADGES.map((badge) => {
+            const earned = earnedBadges.some((b) => b.id === badge.id);
+            return (
+              <div
+                key={badge.id}
+                className={`flex-shrink-0 w-24 p-3 rounded-lg border text-center ${
+                  earned
+                    ? "bg-skate-lime/10 border-skate-lime/40"
+                    : "bg-concrete-900 border-concrete-700 opacity-50"
+                }`}
+                title={badge.description}
+              >
+                <div className="text-2xl mb-1">{badge.icon}</div>
+                <p className="text-[10px] font-bold text-concrete-200 leading-tight">
+                  {badge.name}
+                </p>
+                <p className="text-[9px] text-concrete-500 mt-0.5">
+                  Tier {badge.tier}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        {nextBadge && (
+          <p className="text-xs text-concrete-400 mt-2">
+            Next up: <span className="text-skate-cyan font-medium">{nextBadge.badge.name}</span>{" "}
+            — {nextBadge.tricksRemaining} trick{nextBadge.tricksRemaining !== 1 ? "s" : ""} left
+          </p>
+        )}
+      </div>
+
       {sessions.length > 0 && (
         <div
           className={`mb-6 p-3 rounded-lg border ${
@@ -200,35 +240,28 @@ export default function DashboardPage() {
           Progression Tree
         </h2>
         <div className="bg-concrete-900 border border-concrete-700 rounded-lg p-4">
-          <div className="flex justify-center gap-4 mb-3 text-[10px] text-concrete-400">
+          <div className="flex flex-wrap justify-center gap-3 mb-3 text-[10px] text-concrete-400">
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full border-2 border-skate-lime bg-skate-lime/40" />
+              Mastered
+            </span>
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-full border-2 border-skate-lime bg-skate-lime/20" />
-              Landed
+              Consistent
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 rounded-full border-2 border-skate-cyan bg-skate-cyan/20" />
+              Landed Once
             </span>
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-full border-2 border-skate-orange bg-skate-orange/20" />
-              Learning
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-3 h-3 rounded-full border-2 border-skate-cyan bg-skate-cyan/10" />
-              Ready
+              Practicing
             </span>
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 rounded-full border-2 border-concrete-700 bg-concrete-900" />
               Locked
             </span>
           </div>
-          {STAGES.map((stage) => (
-            <div key={stage.number} className="mb-2">
-              <p className="text-[10px] font-bold text-concrete-500 uppercase tracking-wider text-center mb-1">
-                Stage {stage.number}: {stage.name}
-              </p>
-              <TrickTree
-                trickProgress={trickProgress}
-                onTrickClick={() => {}}
-              />
-            </div>
-          )).slice(0, 1)}
           <TrickTree trickProgress={trickProgress} />
           <Link
             href="/tricks"
@@ -239,7 +272,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Monthly Summary */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display text-lg font-bold text-white">
@@ -268,7 +300,6 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Recent sessions */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display text-lg font-bold text-white">
@@ -284,7 +315,7 @@ export default function DashboardPage() {
         {sessions.length === 0 ? (
           <div className="bg-concrete-900 border border-concrete-700 rounded-lg p-8 text-center">
             <p className="text-concrete-500 mb-3">
-              Your session log is empty. Time to change that.
+              Your session log is empty. Board&apos;s waiting.
             </p>
             <Link
               href="/sessions/new"
