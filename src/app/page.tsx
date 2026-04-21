@@ -3,6 +3,7 @@
 import { useAuthContext } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Button, Eyebrow, HazardTape } from "@/components/ui/primitives";
 
 export default function Home() {
   const { user, profile, loading, signIn, signUp, signInWithGoogle } =
@@ -36,7 +37,7 @@ export default function Home() {
       } else {
         await signIn(email, password);
       }
-      // The effect above routes once profile is loaded.
+      // Routing handled by the effect once profile is loaded.
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Authentication failed";
       setError(msg.replace("Firebase: ", "").replace(/\(auth\/.*\)/, "").trim());
@@ -49,7 +50,7 @@ export default function Home() {
     setError("");
     try {
       await signInWithGoogle();
-      // The effect above routes once profile is loaded.
+      // Routing handled by the effect.
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Google sign-in failed";
       setError(msg.replace("Firebase: ", "").replace(/\(auth\/.*\)/, "").trim());
@@ -57,80 +58,173 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        {/* Logo / Hero */}
-        <div className="text-center mb-10">
-          <h1 className="font-display text-5xl font-bold text-skate-lime tracking-tighter leading-none">
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        padding: "48px 20px",
+        position: "relative",
+        zIndex: 1,
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 440 }}>
+        {/* Wordmark */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div
+            style={{
+              fontFamily: "var(--hammer)",
+              fontSize: 72,
+              lineHeight: 0.9,
+              letterSpacing: "-0.01em",
+              color: "var(--paper)",
+            }}
+          >
             LATE
-            <br />
-            <span className="text-white">PUSH</span>
-          </h1>
-          <p className="text-concrete-400 text-sm mt-3 max-w-xs mx-auto">
-            Structured skateboarding for adults who have jobs, responsibilities,
-            and bones that take longer to heal.
-          </p>
+            <span
+              style={{
+                color: "var(--hazard)",
+                display: "inline-block",
+                transform: "skewX(-8deg)",
+                margin: "0 2px",
+              }}
+            >
+              /
+            </span>
+            PUSH
+          </div>
+          <div
+            style={{
+              width: 120,
+              height: 4,
+              background: "var(--hazard)",
+              transform: "skewX(-12deg)",
+              margin: "8px auto 16px",
+            }}
+          />
+          <div
+            className="mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--paper-dim)",
+            }}
+          >
+            Skateboarding for people with jobs
+          </div>
         </div>
 
-        {/* Auth form */}
-        <div className="bg-concrete-900 border border-concrete-700 rounded-xl p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-concrete-400 uppercase tracking-wider mb-1">
-                Email
-              </label>
+        <HazardTape thin />
+
+        {/* Auth card */}
+        <div
+          className="card-dark"
+          style={{
+            padding: 28,
+            marginTop: 28,
+            borderColor: "var(--ink-3)",
+            background: "var(--ink-2)",
+          }}
+        >
+          <Eyebrow>{isSignUp ? "CREATE ACCOUNT" : "SIGN IN"}</Eyebrow>
+
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "grid", gap: 16, marginTop: 18 }}
+          >
+            <Field label="Email">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-concrete-800 border border-concrete-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-skate-lime"
                 placeholder="you@email.com"
+                autoComplete="email"
+                style={inputStyle}
               />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-concrete-400 uppercase tracking-wider mb-1">
-                Password
-              </label>
+            </Field>
+            <Field
+              label="Password"
+              hint={isSignUp ? "At least 6 characters" : undefined}
+            >
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full bg-concrete-800 border border-concrete-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-skate-lime"
-                placeholder="At least 6 characters"
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+                style={inputStyle}
               />
-            </div>
+            </Field>
 
             {error && (
-              <p className="text-xs text-skate-red">{error}</p>
+              <div
+                className="mono"
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--coral)",
+                  padding: "8px 10px",
+                  border: "1px solid var(--coral)",
+                  borderRadius: 4,
+                }}
+              >
+                {error}
+              </div>
             )}
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={submitting}
-              className="w-full py-2.5 rounded-lg bg-skate-lime text-concrete-950 font-display font-bold text-sm hover:bg-skate-lime/90 transition-colors disabled:opacity-50"
+              style={{ width: "100%", justifyContent: "center" }}
             >
               {submitting
-                ? "Loading..."
+                ? "Loading…"
                 : isSignUp
-                ? "Create Account"
-                : "Sign In"}
-            </button>
+                ? "Create account →"
+                : "Sign in →"}
+            </Button>
           </form>
 
-          <div className="my-4 flex items-center gap-3">
-            <div className="flex-1 h-px bg-concrete-700" />
-            <span className="text-xs text-concrete-500">or</span>
-            <div className="flex-1 h-px bg-concrete-700" />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              margin: "20px 0 14px",
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: "var(--ink-3)",
+              }}
+            />
+            <span className="label">OR</span>
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: "var(--ink-3)",
+              }}
+            />
           </div>
 
-          <button
+          <Button
+            variant="ghost"
             onClick={handleGoogle}
-            className="w-full py-2.5 rounded-lg bg-concrete-800 border border-concrete-700 text-white font-medium text-sm hover:bg-concrete-700 transition-colors flex items-center justify-center gap-2"
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              gap: 10,
+            }}
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <svg width="16" height="16" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -149,27 +243,107 @@ export default function Home() {
               />
             </svg>
             Continue with Google
-          </button>
+          </Button>
 
-          <p className="text-center mt-4">
+          <div
+            style={{
+              marginTop: 18,
+              paddingTop: 16,
+              borderTop: "1px dashed var(--ink-3)",
+              textAlign: "center",
+            }}
+          >
             <button
+              type="button"
               onClick={() => {
                 setIsSignUp(!isSignUp);
                 setError("");
               }}
-              className="text-xs text-concrete-400 hover:text-skate-cyan transition-colors"
+              className="mono"
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "var(--paper-dim)",
+                fontSize: 11,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+              }}
             >
               {isSignUp
-                ? "Already have an account? Sign in"
-                : "New here? Create an account"}
+                ? "← Already have an account? Sign in"
+                : "New here? Create an account →"}
             </button>
-          </p>
+          </div>
         </div>
 
-        <p className="text-center text-[10px] text-concrete-600 mt-6">
-          No gatekeeping. No &quot;you&apos;re too old.&quot; Just structure and progression.
-        </p>
+        {/* Footer tagline */}
+        <div
+          className="mono"
+          style={{
+            marginTop: 24,
+            textAlign: "center",
+            fontSize: 10,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "var(--paper-dim)",
+            lineHeight: 1.6,
+          }}
+        >
+          No gatekeeping. No &quot;you&apos;re too old.&quot;
+          <br />
+          Just structure and progression.
+        </div>
       </div>
     </div>
   );
 }
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label style={{ display: "block" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          marginBottom: 6,
+        }}
+      >
+        <span
+          className="mono"
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "var(--paper-dim)",
+          }}
+        >
+          {label}
+        </span>
+        {hint && <span className="label">{hint}</span>}
+      </div>
+      {children}
+    </label>
+  );
+}
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  background: "var(--ink)",
+  border: "1px solid var(--ink-3)",
+  borderRadius: "var(--r-s)",
+  padding: "10px 12px",
+  color: "var(--paper)",
+  fontFamily: "var(--body)",
+  fontSize: 14,
+  outline: "none",
+};
