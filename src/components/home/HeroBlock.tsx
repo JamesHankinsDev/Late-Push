@@ -26,7 +26,9 @@ export default function HeroBlock({
   const eyebrow =
     sessions === 0
       ? "WELCOME TO LATE PUSH"
-      : `WELCOME BACK · DAY ${Math.max(daysIn, 1)}`;
+      : streak >= 3
+      ? "WELCOME BACK · ON STREAK"
+      : "WELCOME BACK";
 
   return (
     <div className="home-hero">
@@ -78,38 +80,33 @@ function buildCopy({
   if (sessions === 0) {
     return [
       <>
-        Time to <br />
-        <span className="marker on-ink">push off.</span>
+        Time to <span className="marker on-ink">push off.</span>
       </>,
-      "Your first drill is cued up below. Twenty minutes, no commitment beyond that. The hardest session is always session one — it gets easier.",
+      "Your first drill is cued up below. Twenty minutes, no commitment beyond that — the hardest session is always session one.",
     ];
   }
   if (landed === 0) {
     return [
       <>
-        {sessions} session{sessions === 1 ? "" : "s"} in.
-        <br />
-        <span className="marker on-ink">First landing's coming.</span>
+        Reps now, <span className="marker on-ink">landings soon.</span>
       </>,
-      "You're putting in the reps. Landed tricks aren't what matter yet — the foundation is. Keep showing up.",
+      `${sessions} session${sessions === 1 ? "" : "s"} in. Landed tricks aren't what matter yet — the foundation is. Keep showing up.`,
     ];
   }
   if (streak >= 3) {
     return [
       <>
-        {streak}-session streak.
-        <br />
+        Streak of {streak}.{" "}
         <span className="marker on-ink">Keep it rolling.</span>
       </>,
-      `${landed} landed, ${sessions} sessions logged. That's better than 80% of adult beginners ever manage. ${nextTrickName ? `Next up: ${nextTrickName}.` : "Check the path to see what's next."}`,
+      `${landed} landed, ${sessions} sessions logged. That's better than 80% of adult beginners ever manage.${nextTrickName ? ` Next up: ${nextTrickName}.` : ""}`,
     ];
   }
   return [
     <>
-      Day {Math.max(daysIn, 1)} in.
-      <br />
-      <span className="marker on-ink">Back for more.</span>
+      Day {Math.max(daysIn, 1)}.{" "}
+      <span className="marker on-ink">What&apos;s next?</span>
     </>,
-    `${landed} landed, ${sessions} sessions logged. ${nextTrickName ? `Your next trick is ${nextTrickName}.` : "Check the path to see what's next."}`,
+    `${landed} landed, ${sessions} sessions logged.${nextTrickName ? ` Your next trick is ${nextTrickName}.` : " Head to the path to see what's next."}`,
   ];
 }
