@@ -11,7 +11,8 @@ import {
   getPrerequisiteTricks,
   getEffectiveStatus,
 } from "@/lib/curriculum";
-import { TrickStatus, YouTubeVideo, STATUS_RANK } from "@/lib/types";
+import { TrickProgress, TrickStatus, YouTubeVideo, STATUS_RANK } from "@/lib/types";
+import { updateTrickProgress } from "@/lib/sources/firestore";
 import {
   Button,
   Eyebrow,
@@ -32,7 +33,7 @@ const RISK_LABEL = { low: "LOW", medium: "MEDIUM", high: "HIGH" } as const;
 
 export default function LessonPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { profile } = useAuthContext();
+  const { profile, refreshProfile } = useAuthContext();
   const trick = useMemo(() => getTrickById(params.id), [params.id]);
 
   const trickProgress = profile?.trickProgress ?? {};
@@ -58,6 +59,7 @@ export default function LessonPage({ params }: { params: { id: string } }) {
   const [checked, setChecked] = useState<Record<number, boolean>>({});
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
+  const [marking, setMarking] = useState(false);
 
   useEffect(() => {
     if (!trick) return;
@@ -131,6 +133,49 @@ export default function LessonPage({ params }: { params: { id: string } }) {
     }`;
     router.push(url);
   }
+
+  async function markComplete() {
+    if (!profile || !trick || marking) return;
+    setMarking(true);
+    try {
+      const existing = trickProgress[trick.id];
+      const now = new Date().toISOString();
+      const next: TrickProgress = {
+        trickId: trick.id,
+        status: "mastered",
+        attempts: existing?.attempts ?? 0,
+        notes: existing?.notes ?? "",
+        firstLandedDate: existing?.firstLandedDate ?? now,
+        consistentDate: existing?.consistentDate ?? now,
+        masteredDate: existing?.masteredDate ?? now,
+      };
+      await updateTrickProgress(profile.uid, trick.id, next);
+      await refreshProfile();
+    } finally {
+      setMarking(false);
+    }
+  }
+
+  async function markIncomplete() {
+    if (!profile || !trick || marking) return;
+    setMarking(true);
+    try {
+      const existing = trickProgress[trick.id];
+      const next: TrickProgress = {
+        trickId: trick.id,
+        status: "not_started",
+        attempts: existing?.attempts ?? 0,
+        notes: existing?.notes ?? "",
+      };
+      await updateTrickProgress(profile.uid, trick.id, next);
+      await refreshProfile();
+    } finally {
+      setMarking(false);
+    }
+  }
+
+  const isCompleted =
+    STATUS_RANK[status] >= STATUS_RANK.landed_once;
 
   return (
     <div>
@@ -323,40 +368,86 @@ export default function LessonPage({ params }: { params: { id: string } }) {
           </div>
 
           {/* Check-in */}
-          <div className="sec-head">
-            <h3>End-of-session Check-in</h3>
-            <span className="label">LOG IT · BUILD THE RECORD</span>
-          </div>
-          <div className="checkin">
-            <h4>HOW&apos;D IT GO?</h4>
-            <div className="sub">PICK ONE — WE&apos;LL LOG IT AND NUDGE YOUR STATUS</div>
-            <div className="checkin-options">
-              {CHECKIN_OPTIONS.map((o) => (
-                <div
-                  key={o.id}
-                  className={`check-opt ${attempt === o.id ? "sel" : ""}`}
-                  onClick={() => setAttempt(o.id)}
-                >
-                  <span className="ico">{o.ico}</span>
-                  <span>{o.lbl}</span>
-                </div>
-              ))}
-            </div>
-            {attempt && (
-              <div style={{ marginTop: 14, display: "flex", gap: 10 }}>
-                <Button variant="coral" onClick={logSession}>
-                  Log session →
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAttempt(null)}
-                >
-                  Clear
-                </Button>
+          {isKnowledgeTier ? (
+            <>
+              <div className="sec-head">
+                <h3>Mark it done</h3>
+                <span className="label">
+                  {isCompleted ? "COMPLETED" : "ONE CLICK · NO SESSION NEEDED"}
+                </span>
               </div>
-            )}
-          </div>
+              <div className="checkin">
+                <h4>{isCompleted ? "DONE. ONTO THE NEXT ONE." : "GOT IT?"}</h4>
+                <div className="sub">
+                  {isCompleted
+                    ? "Change your mind? You can always mark this incomplete."
+                    : "Knowledge-tier tricks aren't about reps — confirm you've worked through it."}
+                </div>
+                <div style={{ marginTop: 14, display: "flex", gap: 10 }}>
+                  {isCompleted ? (
+                    <>
+                      <Button variant="mint" disabled>
+                        ✓ Completed
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={markIncomplete}
+                        disabled={!profile || marking}
+                      >
+                        Mark incomplete
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="coral"
+                      onClick={markComplete}
+                      disabled={!profile || marking}
+                    >
+                      {marking ? "Saving…" : "Mark complete →"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="sec-head">
+                <h3>End-of-session Check-in</h3>
+                <span className="label">LOG IT · BUILD THE RECORD</span>
+              </div>
+              <div className="checkin">
+                <h4>HOW&apos;D IT GO?</h4>
+                <div className="sub">PICK ONE — WE&apos;LL LOG IT AND NUDGE YOUR STATUS</div>
+                <div className="checkin-options">
+                  {CHECKIN_OPTIONS.map((o) => (
+                    <div
+                      key={o.id}
+                      className={`check-opt ${attempt === o.id ? "sel" : ""}`}
+                      onClick={() => setAttempt(o.id)}
+                    >
+                      <span className="ico">{o.ico}</span>
+                      <span>{o.lbl}</span>
+                    </div>
+                  ))}
+                </div>
+                {attempt && (
+                  <div style={{ marginTop: 14, display: "flex", gap: 10 }}>
+                    <Button variant="coral" onClick={logSession}>
+                      Log session →
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setAttempt(null)}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Sidebar */}
