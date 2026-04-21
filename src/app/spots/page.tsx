@@ -1,16 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { SkateSpot, WeatherData } from "@/lib/types";
 import SkateScoreBadge from "@/components/ui/SkateScoreBadge";
-import dynamic from "next/dynamic";
+import { Button, Eyebrow, Tag } from "@/components/ui/primitives";
 
 const SpotMap = dynamic(() => import("@/components/spots/SpotMap"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-64 md:h-96 bg-concrete-800 rounded-lg animate-pulse" />
+    <div
+      className="card-dark animate-pulse"
+      style={{ height: 320, padding: 0 }}
+    />
   ),
 });
+
+const RADIUS_OPTIONS = [5000, 10000, 25000, 50000];
 
 export default function SpotsPage() {
   const [spots, setSpots] = useState<SkateSpot[]>([]);
@@ -42,7 +48,6 @@ export default function SpotsPage() {
     );
   };
 
-  // Fetch spots and weather when location is available
   useEffect(() => {
     if (!userLocation) return;
 
@@ -57,7 +62,6 @@ export default function SpotsPage() {
             `/api/weather?lat=${userLocation.lat}&lng=${userLocation.lng}`
           ),
         ]);
-
         if (spotsRes.ok) {
           const data = await spotsRes.json();
           setSpots(data.spots);
@@ -77,68 +81,108 @@ export default function SpotsPage() {
   }, [userLocation, radius]);
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="font-display text-3xl font-bold text-white">
-          Spot Finder
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <Eyebrow>SPOT FINDER</Eyebrow>
+        <h1 className="hed hed-l" style={{ marginTop: 10 }}>
+          Parks, ledges, perfect lots.
         </h1>
-        <p className="text-sm text-concrete-400 mt-1">
-          Find skateparks and spots near you
+        <p className="dim" style={{ marginTop: 8, maxWidth: "52ch" }}>
+          Drop a pin on your location and we&apos;ll pull nearby skate spots,
+          real weather, and a skate score so you know if today&apos;s worth it.
         </p>
       </div>
 
       {/* Weather / Skate Score */}
       {weather && (
-        <div className="bg-concrete-900 border border-concrete-700 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-concrete-500 uppercase tracking-wider mb-1">
-                Current Conditions
-              </p>
-              <p className="text-white font-display font-bold text-lg">
-                {weather.temperature}°F — {weather.description}
-              </p>
-              <div className="flex gap-4 text-xs text-concrete-400 mt-1">
-                <span>Wind: {weather.windSpeed} mph</span>
-                <span>Humidity: {weather.humidity}%</span>
-                {weather.precipitation > 0 && (
-                  <span className="text-skate-red">
-                    Precip: {weather.precipitation}mm
-                  </span>
-                )}
-              </div>
+        <div
+          className="card-dark"
+          style={{
+            padding: 18,
+            marginBottom: 20,
+            display: "grid",
+            gridTemplateColumns: "1fr auto",
+            gap: 16,
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <Eyebrow>CURRENT CONDITIONS</Eyebrow>
+            <div
+              style={{
+                fontFamily: "var(--hammer)",
+                fontSize: 22,
+                letterSpacing: "0.02em",
+                marginTop: 8,
+                marginBottom: 4,
+              }}
+            >
+              {weather.temperature}°F · {weather.description.toUpperCase()}
             </div>
-            <div className="text-right">
-              <p className="text-[10px] text-concrete-500 uppercase tracking-wider mb-1">
-                Good day to skate?
-              </p>
-              <SkateScoreBadge score={weather.skateScore} />
+            <div
+              className="mono"
+              style={{
+                fontSize: 11,
+                color: "var(--paper-dim)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                display: "flex",
+                gap: 14,
+                flexWrap: "wrap",
+              }}
+            >
+              <span>WIND {weather.windSpeed} mph</span>
+              <span>HUMIDITY {weather.humidity}%</span>
+              {weather.precipitation > 0 && (
+                <span style={{ color: "var(--coral)" }}>
+                  PRECIP {weather.precipitation}mm
+                </span>
+              )}
             </div>
           </div>
+          <SkateScoreBadge score={weather.skateScore} />
         </div>
       )}
 
       {/* Location prompt */}
       {!userLocation && (
-        <div className="bg-concrete-900 border border-concrete-700 rounded-lg p-8 text-center mb-6">
-          <p className="text-concrete-400 mb-3">
+        <div
+          className="card-dark"
+          style={{ padding: 32, textAlign: "center", marginBottom: 20 }}
+        >
+          <Eyebrow>LOCATION</Eyebrow>
+          <p
+            style={{
+              color: "var(--paper-dim)",
+              margin: "12px 0 20px",
+              fontSize: 14,
+            }}
+          >
             Enable location to find skateparks near you and check conditions.
           </p>
-          <button
-            onClick={requestLocation}
-            className="px-6 py-2 rounded-lg bg-skate-lime text-concrete-950 font-bold text-sm hover:bg-skate-lime/90 transition-colors"
-          >
-            Enable Location
-          </button>
+          <Button variant="primary" onClick={requestLocation}>
+            Enable location →
+          </Button>
           {error && (
-            <p className="text-xs text-skate-red mt-3">{error}</p>
+            <p
+              className="mono"
+              style={{
+                color: "var(--coral)",
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginTop: 14,
+              }}
+            >
+              {error}
+            </p>
           )}
         </div>
       )}
 
       {/* Map */}
       {userLocation && (
-        <div className="mb-6">
+        <div style={{ marginBottom: 18 }}>
           <SpotMap
             spots={spots}
             userLocation={userLocation}
@@ -149,20 +193,38 @@ export default function SpotsPage() {
 
       {/* Radius selector */}
       {userLocation && (
-        <div className="flex gap-2 mb-4">
-          {[5000, 10000, 25000, 50000].map((r) => (
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginBottom: 18,
+            flexWrap: "wrap",
+          }}
+        >
+          <span className="label" style={{ alignSelf: "center" }}>
+            RADIUS →
+          </span>
+          {RADIUS_OPTIONS.map((r) => (
             <button
               key={r}
               onClick={() => setRadius(r)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                radius === r
-                  ? "bg-skate-lime text-concrete-950 font-bold"
-                  : "bg-concrete-800 text-concrete-300 hover:bg-concrete-700"
-              }`}
+              style={{
+                padding: "6px 12px",
+                borderRadius: "var(--r-s)",
+                background: radius === r ? "var(--hazard)" : "var(--ink-2)",
+                color: radius === r ? "var(--ink)" : "var(--paper-dim)",
+                border: `1px solid ${
+                  radius === r ? "var(--ink)" : "var(--ink-3)"
+                }`,
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                fontWeight: radius === r ? 700 : 400,
+              }}
             >
-              {r < 1000
-                ? `${r}m`
-                : `${r / 1000}km`}
+              {r < 1000 ? `${r}m` : `${r / 1000}km`}
             </button>
           ))}
         </div>
@@ -170,50 +232,72 @@ export default function SpotsPage() {
 
       {/* Spot list */}
       {loading ? (
-        <div className="space-y-3">
+        <div style={{ display: "grid", gap: 12 }}>
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-concrete-900 border border-concrete-700 rounded-lg p-4 animate-pulse"
-            >
-              <div className="h-4 bg-concrete-800 rounded w-1/3 mb-2" />
-              <div className="h-3 bg-concrete-800 rounded w-2/3" />
-            </div>
+              className="card-dark animate-pulse"
+              style={{ height: 80 }}
+            />
           ))}
         </div>
       ) : spots.length > 0 ? (
-        <div className="space-y-2">
+        <div style={{ display: "grid", gap: 12 }}>
           {spots.map((spot) => (
-            <div
-              key={spot.id}
-              className="bg-concrete-900 border border-concrete-700 rounded-lg p-4"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-display font-bold text-white text-sm">
+            <div key={spot.id} className="card-dark" style={{ padding: 16 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{
+                      fontFamily: "var(--display)",
+                      fontSize: 17,
+                      letterSpacing: "0.04em",
+                      color: "var(--paper)",
+                    }}
+                  >
                     {spot.name}
-                  </h3>
-                  <div className="flex gap-3 text-xs text-concrete-400 mt-1">
-                    {spot.distance && <span>{spot.distance} mi</span>}
-                    {spot.surface && <span>Surface: {spot.surface}</span>}
-                    <span className="capitalize">{spot.type.replace("_", " ")}</span>
+                  </div>
+                  <div
+                    className="mono"
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      color: "var(--paper-dim)",
+                      marginTop: 4,
+                      display: "flex",
+                      gap: 12,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {spot.distance != null && <span>{spot.distance} MI</span>}
+                    {spot.surface && <span>SURFACE · {spot.surface}</span>}
+                    <span>{spot.type.replace("_", " ")}</span>
                   </div>
                 </div>
                 {spot.beginnerFriendly && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-skate-lime/20 text-skate-lime font-medium flex-shrink-0">
-                    Beginner Friendly
-                  </span>
+                  <Tag tone="mint">BEGINNER FRIENDLY</Tag>
                 )}
               </div>
               {spot.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 6,
+                    flexWrap: "wrap",
+                    marginTop: 10,
+                  }}
+                >
                   {spot.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[10px] px-1.5 py-0.5 rounded bg-concrete-800 text-concrete-500"
-                    >
-                      {tag}
-                    </span>
+                    <Tag key={tag}>{tag}</Tag>
                   ))}
                 </div>
               )}
@@ -221,7 +305,10 @@ export default function SpotsPage() {
           ))}
         </div>
       ) : userLocation ? (
-        <p className="text-concrete-500 text-sm text-center py-8">
+        <p
+          className="dim"
+          style={{ textAlign: "center", padding: "32px 0", fontSize: 13 }}
+        >
           No spots found in this area. Try increasing the radius.
         </p>
       ) : null}

@@ -1,50 +1,93 @@
 "use client";
 
+import { Eyebrow } from "@/components/ui/primitives";
+
 interface CoachResponseProps {
   response: string;
   loading?: boolean;
 }
 
 export default function CoachResponse({ response, loading }: CoachResponseProps) {
-  if (loading) {
-    return (
-      <div className="bg-concrete-800 border border-concrete-700 rounded-lg p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 rounded-full bg-skate-purple/20 flex items-center justify-center">
-            <span className="text-sm">🤖</span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-white">Your Skate Coach</p>
-            <p className="text-[10px] text-concrete-500">Powered by Claude</p>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <div className="h-3 bg-concrete-700 rounded animate-pulse w-full" />
-          <div className="h-3 bg-concrete-700 rounded animate-pulse w-5/6" />
-          <div className="h-3 bg-concrete-700 rounded animate-pulse w-4/6" />
-          <div className="h-3 bg-concrete-700 rounded animate-pulse w-full" />
-          <div className="h-3 bg-concrete-700 rounded animate-pulse w-3/6" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!response) return null;
+  if (!loading && !response) return null;
 
   return (
-    <div className="bg-concrete-800 border border-skate-purple/30 rounded-lg p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-8 h-8 rounded-full bg-skate-purple/20 flex items-center justify-center">
-          <span className="text-sm">🤖</span>
+    <div
+      className="card-dark"
+      style={{
+        padding: 20,
+        borderColor: "var(--violet)",
+        background: "rgba(179,140,255,0.05)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 14,
+        }}
+      >
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            background: "rgba(179,140,255,0.2)",
+            border: "1px solid var(--violet)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "var(--hammer)",
+            color: "var(--violet)",
+            fontSize: 16,
+            flexShrink: 0,
+          }}
+        >
+          AI
         </div>
-        <div>
-          <p className="text-sm font-bold text-white">Your Skate Coach</p>
-          <p className="text-[10px] text-concrete-500">Powered by Claude</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Eyebrow>YOUR SKATE COACH</Eyebrow>
+          <div
+            className="mono"
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.1em",
+              color: "var(--paper-dim)",
+              marginTop: 4,
+            }}
+          >
+            POWERED BY CLAUDE
+          </div>
         </div>
       </div>
-      <div className="text-sm text-concrete-200 leading-relaxed whitespace-pre-wrap">
-        {response}
-      </div>
+      {loading ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          {[100, 85, 65, 95, 50].map((w, i) => (
+            <div
+              key={i}
+              className="animate-pulse"
+              style={{
+                height: 12,
+                background: "var(--ink-3)",
+                borderRadius: 6,
+                width: `${w}%`,
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <p
+          style={{
+            fontSize: 14,
+            color: "var(--paper-2)",
+            lineHeight: 1.6,
+            whiteSpace: "pre-wrap",
+            margin: 0,
+          }}
+        >
+          {response}
+        </p>
+      )}
     </div>
   );
 }

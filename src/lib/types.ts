@@ -15,6 +15,11 @@ export interface DrillItem {
   s: string; // subtitle / context
 }
 
+export interface StepItem {
+  t: string; // phase title (e.g. "Stance")
+  p: string; // detail paragraph
+}
+
 export interface Trick {
   id: string;
   name: string;
@@ -27,6 +32,7 @@ export interface Trick {
   tips: string[];
   estimatedAdultLearningTime?: string; // e.g. "2-4 weeks", "1-3 sessions"
   drill?: DrillItem[]; // per-trick drill steps shown on the Lesson page
+  steps?: StepItem[]; // mechanical phases — only authored for physical tricks
 }
 
 export interface TrickProgress {

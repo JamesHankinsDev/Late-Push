@@ -101,9 +101,11 @@ export function getSkateScoreLabel(score: number): string {
   return "Stay inside";
 }
 
+// Returns a CSS var() string for the skate-score tone. Callers can plug it
+// directly into `color:` or `stroke:` style props.
 export function getSkateScoreColor(score: number): string {
-  if (score >= 80) return "text-skate-lime";
-  if (score >= 60) return "text-skate-cyan";
-  if (score >= 40) return "text-skate-orange";
-  return "text-skate-red";
+  if (score >= 80) return "var(--mint)";
+  if (score >= 60) return "var(--sky)";
+  if (score >= 40) return "var(--hazard)";
+  return "var(--brick)";
 }

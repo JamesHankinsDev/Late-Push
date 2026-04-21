@@ -7,28 +7,56 @@ export default function SkateScoreBadge({ score }: { score: number }) {
   const color = getSkateScoreColor(score);
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative w-10 h-10">
-        <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ position: "relative", width: 44, height: 44 }}>
+        <svg
+          width={44}
+          height={44}
+          viewBox="0 0 36 36"
+          style={{ transform: "rotate(-90deg)" }}
+        >
           <path
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             fill="none"
-            stroke="#44403c"
-            strokeWidth="3"
+            stroke="var(--ink-3)"
+            strokeWidth={3}
           />
           <path
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             fill="none"
-            className={color.replace("text-", "stroke-")}
-            strokeWidth="3"
+            stroke={color}
+            strokeWidth={3}
             strokeDasharray={`${score}, 100`}
           />
         </svg>
-        <span className={`absolute inset-0 flex items-center justify-center text-xs font-bold ${color}`}>
+        <span
+          className="mono"
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 12,
+            fontWeight: 700,
+            color,
+          }}
+        >
           {score}
         </span>
       </div>
-      <span className={`text-sm font-medium ${color}`}>{label}</span>
+      <span
+        className="mono"
+        style={{
+          fontSize: 11,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color,
+          fontWeight: 700,
+        }}
+      >
+        {label}
+      </span>
     </div>
   );
 }

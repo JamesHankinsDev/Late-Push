@@ -204,6 +204,11 @@ export const TRICKS: Trick[] = [
       { t: "Push continuously across 100 ft", s: "Don't stop between pushes — keep the rhythm" },
       { t: "Try one push with your weak foot (mongo)", s: "Feels terrible. You still need it eventually." },
     ],
+    steps: [
+      { t: "Plant the front foot", p: "Front foot over the front bolts, angled slightly toward the nose. Knee slightly bent. This foot stays on the board the whole time." },
+      { t: "Push with the back foot", p: "Step down with the back foot next to the board, push back smoothly, and bring the back foot up to the tail. Long strokes, not frantic taps." },
+      { t: "Rotate the front foot", p: "Once both feet are on, rotate the front foot sideways over the bolts. Knees bent, eyes up, weight centered. Coast until you stop." },
+    ],
   },
   {
     id: "riding-straight",
@@ -511,6 +516,13 @@ export const TRICKS: Trick[] = [
       { t: "10 pop-and-slide reps, no land focus", s: "Motion only — drill the mechanics" },
       { t: "One attempt at walking speed", s: "Only after stationary feels dialed" },
     ],
+    steps: [
+      { t: "Stance", p: "Back foot on the tail pocket, ball of foot over the kick. Front foot just behind the front bolts, angled slightly across the board." },
+      { t: "Pop", p: "Snap the tail down with your ankle — not a whole-leg stomp. The nose rises. This is the motion that teaches your ankle what a pop feels like." },
+      { t: "Slide", p: "As the tail pops, drag your front foot up the board toward the nose. This is what levels the board in the air. Sock-covered ankles, beware." },
+      { t: "Level & Catch", p: "At the peak, both feet press down onto the board. Knees bent to absorb. Land over the bolts, not the nose or tail." },
+      { t: "Commit", p: "Half-committing is how you get shinners. Stomp it down on the way back — even the ugly ones." },
+    ],
   },
   {
     id: "rolling-ollie",
@@ -534,6 +546,12 @@ export const TRICKS: Trick[] = [
       { t: "10 ollies at a gentle cruise", s: "Build up gradually once walking speed is solid" },
       { t: "3 attempts to ollie a pencil or stick", s: "A real object to clear — any clearance counts" },
     ],
+    steps: [
+      { t: "Get rolling slow", p: "Walking pace is plenty. Your brain is fighting both the jump AND the forward motion — give it a small amount of one at a time." },
+      { t: "Pop into the motion", p: "Same tail-snap and foot-slide as the stationary ollie. The mechanics do not change. Only your nerve does." },
+      { t: "Stay forward", p: "Lean slightly forward over the board as you pop. Most beginners lean back out of fear, which shoots the board out behind them." },
+      { t: "Land and roll away", p: "Land over the bolts with knees bent. Ride out, even if it feels shaky. One landed rolling ollie is worth a hundred stationaries." },
+    ],
   },
   {
     id: "shuvit",
@@ -556,6 +574,12 @@ export const TRICKS: Trick[] = [
       { t: "20 stationary shuvit attempts", s: "Scoop with the toes, front foot barely helps" },
       { t: "10 rolling shuvits at slow speed", s: "Same mechanics, add momentum" },
       { t: "Film 3 — check shoulder level", s: "Shoulders should stay parallel to the board" },
+    ],
+    steps: [
+      { t: "Stance", p: "Back foot on the tail with toes hanging slightly off the heel edge. Front foot just behind the bolts. Shoulders square to the board." },
+      { t: "Scoop", p: "Flick your back foot backward and slightly sideways — more a toe-scoop than a kick. The board begins to rotate underneath you." },
+      { t: "Lift", p: "Your front foot does almost nothing. Lift it enough to get out of the way and let the board spin." },
+      { t: "Catch", p: "Spot the grip-tape coming back around. Plant both feet over the bolts when it's aligned. Bent knees absorb the landing." },
     ],
   },
   {
@@ -650,6 +674,12 @@ export const TRICKS: Trick[] = [
       { t: "10 rolling no-comply attempts at slow speed", s: "Same mechanics, now with momentum" },
       { t: "Film one — is the board rotating under you?", s: "Even a no-rotation step-on counts as progress" },
     ],
+    steps: [
+      { t: "Set up", p: "Riding slowly or stationary. Front foot behind the bolts, back foot on the tail pocket. Shoulders open slightly toward the toe side." },
+      { t: "Step off toe-side", p: "Plant your front foot on the ground toe-side of the board. You're now standing on one foot with the board on your back foot." },
+      { t: "Scoop + pivot", p: "Back foot scoops the tail like a backside shuvit. The board spins underneath you while you pivot on your planted front foot." },
+      { t: "Step back on", p: "As the board completes its rotation (or doesn't — it's fine), step your front foot back onto the bolts. Ride away." },
+    ],
   },
   {
     id: "boneless",
@@ -699,6 +729,13 @@ export const TRICKS: Trick[] = [
       { t: "30 stationary kickflip attempts", s: "Focus on the flick. Landings come later." },
       { t: "10 flick-motion reps sitting down", s: "Off-board muscle memory for the ankle snap" },
       { t: "Film 3 attempts — check the foot angle", s: "Toes hanging off the toe-side edge" },
+    ],
+    steps: [
+      { t: "Stance", p: "Back foot on the tail, same as an ollie. Front foot angled with the toes hanging slightly off the toe-side edge, ball of foot just behind the front bolts." },
+      { t: "Pop", p: "Pop the tail like an ollie. Don't skip this — a kickflip without a real pop is just a flat-ground foot kick." },
+      { t: "Slide + flick", p: "As the nose rises, slide your front foot up and flick off the toe-side corner of the nose — up AND out. It's an ankle motion, subtle, not a leg kick." },
+      { t: "Spot the grip tape", p: "Watch for the grip-tape to come back around. When it's level, stomp both feet down over the bolts." },
+      { t: "Land and commit", p: "Bent knees absorb the landing. Half-landing with the back foot is normal for weeks. Keep committing to the full stomp." },
     ],
   },
   {
@@ -817,6 +854,13 @@ export const TRICKS: Trick[] = [
       { t: "Stand on the coping with the tail down, 5 times", s: "No commit — just get used to the position" },
       { t: "One hand-assisted drop-in", s: "Friend holds your hand, then lets go" },
       { t: "3 unassisted drop-ins on the smallest ramp available", s: "Knee pads on. Bail on your knees if you need to." },
+    ],
+    steps: [
+      { t: "Set the tail", p: "Stand at the top of the ramp, tail of the board hooked over the coping. Back foot pressing the tail down against the coping — it stays put." },
+      { t: "Plant the front foot", p: "Lift your front foot and place it OVER the front bolts. Your weight is still back — the board isn't trying to move yet." },
+      { t: "Commit forward", p: "Stomp your front foot down and lean forward into the ramp. Your instinct is to lean back — override it. The lean is the whole trick." },
+      { t: "Roll it out", p: "Gravity takes over. Ride down the transition with bent knees, looking at the bottom, not your feet." },
+      { t: "Bail on your knees", p: "If it goes wrong, slide out on your knee pads. That's what they're for. Never brace with straight arms." },
     ],
   },
   {

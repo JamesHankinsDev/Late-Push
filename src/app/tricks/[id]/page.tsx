@@ -97,23 +97,8 @@ export default function LessonPage({ params }: { params: { id: string } }) {
   const lead = nameParts.slice(0, -1).join(" ");
   const highlight = nameParts[nameParts.length - 1];
 
-  const steps = [
-    {
-      t: "Set up",
-      p:
-        "Start slow — stationary or on grass first. Running through the motion once before you fully commit saves you from fighting muscle memory later.",
-    },
-    {
-      t: "Try it slow",
-      p:
-        "Half speed, half height. You're training coordination, not winning the X Games. Precision before power.",
-    },
-    {
-      t: "Commit",
-      p:
-        "Half-committing is how you get hurt. When you decide to do it, do the whole thing, even if it's ugly.",
-    },
-  ];
+  // Only render the Step-by-Step section if the trick has authored steps.
+  const steps = trick.steps;
 
   const drill = trick.drill ?? [
     { t: "Go out and work on it for 20–30 minutes", s: "Drill details will show up here once this trick has authored steps." },
@@ -395,22 +380,26 @@ export default function LessonPage({ params }: { params: { id: string } }) {
             </div>
           )}
 
-          {/* Steps */}
-          <div className="sec-head">
-            <h3>Step-by-Step</h3>
-            <span className="label">{steps.length} PHASES</span>
-          </div>
-          <div className="steps">
-            {steps.map((s, i) => (
-              <div key={i} className="step">
-                <div className="num">{String(i + 1).padStart(2, "0")}</div>
-                <div>
-                  <h5>{s.t}</h5>
-                  <p>{s.p}</p>
-                </div>
+          {/* Steps — only when authored for this trick */}
+          {steps && steps.length > 0 && (
+            <>
+              <div className="sec-head">
+                <h3>Step-by-Step</h3>
+                <span className="label">{steps.length} PHASES</span>
               </div>
-            ))}
-          </div>
+              <div className="steps">
+                {steps.map((s, i) => (
+                  <div key={i} className="step">
+                    <div className="num">{String(i + 1).padStart(2, "0")}</div>
+                    <div>
+                      <h5>{s.t}</h5>
+                      <p>{s.p}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Tips */}
           <div className="sec-head">

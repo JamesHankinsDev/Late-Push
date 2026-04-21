@@ -1,160 +1,223 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { useAuthContext } from "@/components/AuthProvider";
-import { getUserSessions } from "@/lib/sources/firestore";
-import { Session } from "@/lib/types";
 import { getTrickById } from "@/lib/curriculum";
 import CoachResponse from "@/components/sessions/CoachResponse";
-import Link from "next/link";
+import { Button, Eyebrow, Tag } from "@/components/ui/primitives";
+import { format } from "date-fns";
+
+const BODY_FEEL_TONE = {
+  fine: "mint",
+  sore: "yellow",
+  injured: "coral",
+} as const;
+
+const BODY_FEEL_LABEL = {
+  fine: "FELT FINE",
+  sore: "SORE",
+  injured: "INJURED",
+};
 
 export default function SessionsPage() {
-  const { profile } = useAuthContext();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { sessions, sessionsLoading } = useAuthContext();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!profile) return;
-    getUserSessions(profile.uid)
-      .then(setSessions)
-      .finally(() => setLoading(false));
-  }, [profile]);
 
   const totalHours = (
     sessions.reduce((acc, s) => acc + s.duration, 0) / 60
   ).toFixed(1);
 
-  const bodyFeelEmoji = (feel: string) => {
-    if (feel === "fine") return "🟢";
-    if (feel === "sore") return "🟡";
-    return "🔴";
-  };
-
   return (
-    <div className="p-4 md:p-8 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          gap: 16,
+          marginBottom: 24,
+          flexWrap: "wrap",
+        }}
+      >
         <div>
-          <h1 className="font-display text-3xl font-bold text-white">
-            Sessions
+          <Eyebrow>SESSION LOG</Eyebrow>
+          <h1 className="hed hed-l" style={{ marginTop: 10 }}>
+            Every push, in the books.
           </h1>
-          <p className="text-sm text-concrete-400 mt-1">
-            {sessions.length} sessions &middot; {totalHours} hours total
+          <p className="dim" style={{ marginTop: 8 }}>
+            {sessions.length} session{sessions.length === 1 ? "" : "s"} ·{" "}
+            {totalHours} hour{totalHours === "1.0" ? "" : "s"} total
           </p>
         </div>
-        <Link
-          href="/sessions/new"
-          className="px-4 py-2 rounded-lg bg-skate-lime text-concrete-950 font-bold text-sm hover:bg-skate-lime/90 transition-colors"
-        >
-          + Log Session
+        <Link href="/sessions/new">
+          <Button variant="primary">+ Log session</Button>
         </Link>
       </div>
 
-      {loading ? (
-        <div className="space-y-3">
+      {sessionsLoading && sessions.length === 0 ? (
+        <div style={{ display: "grid", gap: 12 }}>
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-concrete-900 border border-concrete-700 rounded-lg p-4 animate-pulse"
-            >
-              <div className="h-4 bg-concrete-800 rounded w-1/3 mb-2" />
-              <div className="h-3 bg-concrete-800 rounded w-2/3" />
-            </div>
+              className="card-dark animate-pulse"
+              style={{ height: 88 }}
+            />
           ))}
         </div>
       ) : sessions.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-concrete-500 text-lg mb-2">No sessions yet</p>
-          <p className="text-concrete-600 text-sm mb-6">
-            Get out there and log your first session.
-          </p>
-          <Link
-            href="/sessions/new"
-            className="inline-block px-6 py-2 rounded-lg bg-skate-lime text-concrete-950 font-bold text-sm"
+        <div
+          className="card-dark"
+          style={{ padding: 40, textAlign: "center" }}
+        >
+          <Eyebrow>EMPTY LOG</Eyebrow>
+          <p
+            style={{
+              color: "var(--paper-dim)",
+              margin: "12px 0 20px",
+              fontSize: 14,
+            }}
           >
-            Log Your First Session
+            No sessions yet. Your first log takes 30 seconds — the coach writes
+            back after.
+          </p>
+          <Link href="/sessions/new">
+            <Button variant="primary">Log your first session →</Button>
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: "grid", gap: 12 }}>
           {sessions.map((session) => {
             const isExpanded = expandedId === session.id;
+            const trickNames = session.tricksPracticed
+              .slice(0, 3)
+              .map((id) => getTrickById(id)?.name ?? id)
+              .join(", ");
+            const more = session.tricksPracticed.length - 3;
+            const dateLabel = (() => {
+              try {
+                return format(new Date(session.date), "MMM d").toUpperCase();
+              } catch {
+                return session.date.slice(5, 10).toUpperCase();
+              }
+            })();
             return (
               <div
                 key={session.id}
-                className="bg-concrete-900 border border-concrete-700 rounded-lg overflow-hidden"
+                className="card-dark"
+                style={{ padding: 0, overflow: "hidden" }}
               >
                 <button
+                  type="button"
                   onClick={() =>
                     setExpandedId(isExpanded ? null : session.id)
                   }
-                  className="w-full text-left p-4 hover:bg-concrete-800 transition-colors"
+                  className="session-row"
+                  style={{
+                    width: "100%",
+                    background: "transparent",
+                    border: 0,
+                    color: "inherit",
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-bold text-white">
-                        {session.date}
-                        <span className="font-normal text-concrete-400 ml-2">
-                          {session.duration} min
+                  <span
+                    className="mono"
+                    style={{
+                      color: "var(--hazard)",
+                      fontSize: 12,
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    {dateLabel}
+                  </span>
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: "var(--display)",
+                        fontSize: 16,
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {(trickNames || "SESSION").toUpperCase()}
+                      {more > 0 && (
+                        <span
+                          style={{
+                            marginLeft: 8,
+                            fontFamily: "var(--mono)",
+                            fontSize: 11,
+                            color: "var(--paper-dim)",
+                          }}
+                        >
+                          +{more}
                         </span>
-                      </p>
-                      <p className="text-xs text-concrete-400 mt-1">
-                        {session.tricksPracticed
-                          .map((id) => getTrickById(id)?.name ?? id)
-                          .join(", ")}
-                      </p>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span title={session.bodyFeel}>
-                        {bodyFeelEmoji(session.bodyFeel)}
-                      </span>
-                      <span className="text-concrete-500 text-sm">
-                        {isExpanded ? "▲" : "▼"}
-                      </span>
+                    <div
+                      className="mono"
+                      style={{
+                        fontSize: 10,
+                        color: "var(--paper-dim)",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      {session.location
+                        ? session.location.toUpperCase() + " · "
+                        : ""}
+                      {session.duration}M
                     </div>
                   </div>
+                  <Tag tone={BODY_FEEL_TONE[session.bodyFeel]}>
+                    {BODY_FEEL_LABEL[session.bodyFeel]}
+                  </Tag>
+                  <span style={{ color: "var(--paper-dim)" }}>
+                    {isExpanded ? "▲" : "▼"}
+                  </span>
                 </button>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-concrete-800">
-                    {session.location && (
-                      <p className="text-xs text-concrete-400 pt-3">
-                        📍 {session.location}
-                      </p>
-                    )}
+                  <div
+                    style={{
+                      borderTop: "1px dashed var(--ink-3)",
+                      padding: "16px 20px",
+                      display: "grid",
+                      gap: 14,
+                    }}
+                  >
                     {session.whatClicked && (
-                      <div>
-                        <p className="text-[10px] font-bold text-concrete-500 uppercase">
-                          Clicked
-                        </p>
-                        <p className="text-sm text-concrete-200">
-                          {session.whatClicked}
-                        </p>
-                      </div>
+                      <DetailRow label="Clicked" body={session.whatClicked} />
                     )}
                     {session.whatDidnt && (
-                      <div>
-                        <p className="text-[10px] font-bold text-concrete-500 uppercase">
-                          Didn&apos;t Click
-                        </p>
-                        <p className="text-sm text-concrete-200">
-                          {session.whatDidnt}
-                        </p>
-                      </div>
+                      <DetailRow
+                        label="Didn't click"
+                        body={session.whatDidnt}
+                      />
                     )}
                     {session.injuryNotes && (
-                      <div>
-                        <p className="text-[10px] font-bold text-skate-red uppercase">
-                          Injury Notes
-                        </p>
-                        <p className="text-sm text-concrete-200">
-                          {session.injuryNotes}
-                        </p>
-                      </div>
+                      <DetailRow
+                        label="Injury notes"
+                        body={session.injuryNotes}
+                        tone="coral"
+                      />
+                    )}
+                    {session.surfaceQuality && (
+                      <DetailRow
+                        label="Surface"
+                        body={session.surfaceQuality}
+                      />
                     )}
                     {session.coachResponse && (
                       <CoachResponse response={session.coachResponse} />
                     )}
+                    {!session.whatClicked &&
+                      !session.whatDidnt &&
+                      !session.injuryNotes &&
+                      !session.coachResponse && (
+                        <p className="dim small" style={{ margin: 0 }}>
+                          No extra notes on this one.
+                        </p>
+                      )}
                   </div>
                 )}
               </div>
@@ -162,6 +225,43 @@ export default function SessionsPage() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function DetailRow({
+  label,
+  body,
+  tone,
+}: {
+  label: string;
+  body: string;
+  tone?: "coral";
+}) {
+  return (
+    <div>
+      <div
+        className="mono"
+        style={{
+          fontSize: 10,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: tone === "coral" ? "var(--coral)" : "var(--paper-dim)",
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </div>
+      <p
+        style={{
+          margin: 0,
+          fontSize: 14,
+          color: "var(--paper-2)",
+          lineHeight: 1.5,
+        }}
+      >
+        {body}
+      </p>
     </div>
   );
 }
