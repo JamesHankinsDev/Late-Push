@@ -49,7 +49,7 @@ export default function Nav() {
       <Link href="/dashboard" className="logo">
         LATE<span className="accent">/</span>PUSH
       </Link>
-      <div className="logo-sub">Skateboarding for people with jobs</div>
+      <div className="logo-sub">Never too late to push</div>
 
       <div className="nav-items">
         {NAV_ITEMS.map((item) => {

@@ -165,7 +165,7 @@ export const MOCK_CREWS: MockCrew[] = [
     tag: "PUSH",
     color: "#f5d400",
     desc:
-      "Over-30 adult beginners. No egos. Slow progression, lots of snacks.",
+      "Beginners welcome. No egos. Slow progression, lots of snacks.",
     members: 28,
     level: "T1–T3",
     mtgs: "Sat 9am",

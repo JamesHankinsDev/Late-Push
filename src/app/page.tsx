@@ -111,7 +111,7 @@ export default function Home() {
               color: "var(--paper-dim)",
             }}
           >
-            Skateboarding for people with jobs
+            Never too late to push
           </div>
         </div>
 
@@ -290,9 +290,9 @@ export default function Home() {
             lineHeight: 1.6,
           }}
         >
-          No gatekeeping. No &quot;you&apos;re too old.&quot;
+          No gatekeeping. No judgment.
           <br />
-          Just structure and progression.
+          Everyone starts at day one.
         </div>
       </div>
     </div>

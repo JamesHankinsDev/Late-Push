@@ -98,7 +98,7 @@ function buildCopy({
         Streak of {streak}.{" "}
         <span className="marker on-ink">Keep it rolling.</span>
       </>,
-      `${landed} landed, ${sessions} sessions logged. That's better than 80% of adult beginners ever manage.${nextTrickName ? ` Next up: ${nextTrickName}.` : ""}`,
+      `${landed} landed, ${sessions} sessions logged. That's a real habit forming — keep it.${nextTrickName ? ` Next up: ${nextTrickName}.` : ""}`,
     ];
   }
   return [

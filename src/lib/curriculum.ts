@@ -149,7 +149,7 @@ export const TRICKS: Trick[] = [
       "Practice falling on grass first — seriously, just practice the roll",
       "Knee pads let you slide on your knees instead of tumbling. Game changer on ramps.",
       "When you feel yourself going down, bend your knees and try to roll, don't brace",
-      "If you're over 30, nobody will judge you for wearing pads. They'll judge you for the cast.",
+      "Nobody cool will judge you for wearing pads. They will judge you for the cast.",
     ],
     drill: [
       { t: "5 controlled falls onto grass from a standing position", s: "Tuck the arms, roll onto a shoulder" },

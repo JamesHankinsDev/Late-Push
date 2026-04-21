@@ -95,9 +95,10 @@ export default function OnboardingPage() {
               Welcome to <span className="hi">Late Push.</span>
             </h2>
             <p className="sub">
-              Skateboarding for people with jobs, rent, and knees that protest.
-              We&apos;ll set you up in about two minutes — stance, where
-              you&apos;re at, what you want, and you&apos;re rolling.
+              Whoever you are, whenever you&apos;re starting — welcome. We
+              don&apos;t gatekeep. We&apos;ll set you up in about two
+              minutes: stance, where you&apos;re at, what you want, and
+              you&apos;re rolling.
             </p>
             <div
               className="card-dark"
