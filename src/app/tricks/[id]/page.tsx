@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/components/AuthProvider";
 import {
-  TRICKS,
-  TIERS,
   getTrickById,
   getPrerequisiteTricks,
   getEffectiveStatus,
@@ -95,7 +93,6 @@ export default function LessonPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const tier = TIERS[trick.tier];
   const nameParts = trick.name.split(" ");
   const lead = nameParts.slice(0, -1).join(" ");
   const highlight = nameParts[nameParts.length - 1];

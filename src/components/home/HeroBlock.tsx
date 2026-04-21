@@ -1,4 +1,3 @@
-import { Eyebrow } from "@/components/ui/primitives";
 
 interface HeroBlockProps {
   landed: number;

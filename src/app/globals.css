@@ -76,7 +76,7 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.92  0 0 0 0 0.84  0 0 0 0.09 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+  background-image: url("/noise-concrete.svg");
   mix-blend-mode: overlay;
   opacity: 0.5;
 }
@@ -529,7 +529,7 @@ a {
   inset: 0;
   background:
     radial-gradient(ellipse at 85% 120%, rgba(0, 0, 0, 0.18), transparent 60%),
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.15 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+    url("/noise-hero.svg");
   mix-blend-mode: multiply;
   pointer-events: none;
 }
@@ -2037,7 +2037,7 @@ a {
   content: "";
   position: absolute;
   inset: 0;
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.55  0 0 0 0 0.4  0 0 0 0.08 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  background: url("/noise-profile.svg");
   pointer-events: none;
   mix-blend-mode: overlay;
 }
@@ -2376,7 +2376,7 @@ body.type-condensed {
    HELPERS
    ============================================================ */
 
-/* Design-only helpers (Tailwind mt-*/mb-*/flex-1 intentionally kept as theirs) */
+/* Design-only helpers. Tailwind owns mt-x, mb-x, flex-1. */
 .dim {
   color: var(--paper-dim);
 }
