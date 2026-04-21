@@ -48,6 +48,43 @@ service cloud.firestore {
     }
 
     // ============================================================
+    // Friendships — one doc per pair, keyed by sorted UIDs.
+    // Read/write gated on being one of the two parties.
+    // ============================================================
+    match /friendships/{id} {
+      allow read: if request.auth != null
+        && (resource.data.userA == request.auth.uid
+            || resource.data.userB == request.auth.uid);
+
+      // Create: must be the initiator, must be one of the two parties,
+      // doc ID must match the sorted-pair canonical form.
+      allow create: if request.auth != null
+        && request.resource.data.initiatedBy == request.auth.uid
+        && (request.resource.data.userA == request.auth.uid
+            || request.resource.data.userB == request.auth.uid)
+        && request.resource.data.userA < request.resource.data.userB
+        && request.resource.data.status == "pending";
+
+      // Update: only to accept (pending -> accepted), and only by the
+      // recipient (i.e. not the initiator).
+      allow update: if request.auth != null
+        && (resource.data.userA == request.auth.uid
+            || resource.data.userB == request.auth.uid)
+        && resource.data.initiatedBy != request.auth.uid
+        && resource.data.status == "pending"
+        && request.resource.data.status == "accepted"
+        // Don't let anyone rewrite the core identity fields on accept
+        && request.resource.data.userA == resource.data.userA
+        && request.resource.data.userB == resource.data.userB
+        && request.resource.data.initiatedBy == resource.data.initiatedBy;
+
+      // Delete: either party can cancel/decline/unfriend.
+      allow delete: if request.auth != null
+        && (resource.data.userA == request.auth.uid
+            || resource.data.userB == request.auth.uid);
+    }
+
+    // ============================================================
     // Blocks — each user manages their own block list; nobody else
     // can see it.
     // ============================================================

@@ -5,7 +5,15 @@ import { useEffect, useState } from "react";
 import { useAuthContext } from "@/components/AuthProvider";
 import { fetchNearby } from "@/lib/sources/publicProfiles";
 import { block } from "@/lib/sources/blocks";
-import { PublicProfile } from "@/lib/types";
+import {
+  getFriendship,
+  sendFriendRequest,
+} from "@/lib/sources/friendships";
+import {
+  canSendFriendRequest,
+  computeTrustLevel,
+} from "@/lib/social/friendship";
+import { PublicProfile, Friendship } from "@/lib/types";
 import { aliasInitials } from "@/lib/social/aliases";
 import { mergePrivacy } from "@/lib/social/privacy";
 import { getTrickById } from "@/lib/curriculum";
@@ -63,12 +71,64 @@ export default function NearbyReal() {
     return true;
   });
 
+  const [friendships, setFriendships] = useState<Record<string, Friendship | null>>(
+    {}
+  );
+
+  // After rows load, probe each one's friendship status so the card shows
+  // accurate CTA state (pending / accepted / none). One Firestore read per
+  // candidate — fine at MVP scale, can denormalize onto publicProfiles
+  // later if it gets chatty.
+  useEffect(() => {
+    if (!profile || rows.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        rows.map(async (r) => {
+          try {
+            const f = await getFriendship(profile.uid, r.uid);
+            return [r.uid, f] as const;
+          } catch {
+            return [r.uid, null] as const;
+          }
+        })
+      );
+      if (cancelled) return;
+      setFriendships(Object.fromEntries(entries));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [profile, rows]);
+
   async function handleBlock(uid: string) {
     if (!profile || busy) return;
     setBusy(uid);
     try {
       await block(profile.uid, uid);
       setRows((prev) => prev.filter((r) => r.uid !== uid));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleFriendRequest(target: PublicProfile) {
+    if (!profile || busy) return;
+    setBusy(target.uid);
+    try {
+      const sent = await sendFriendRequest(
+        profile.uid,
+        target.uid,
+        {
+          alias: profile.alias ?? "",
+          aliasColor: profile.aliasColor ?? "#f5d400",
+        },
+        { alias: target.alias, aliasColor: target.aliasColor }
+      );
+      setFriendships((prev) => ({ ...prev, [target.uid]: sent }));
+    } catch {
+      // Silent — the canSendFriendRequest check should catch most cases;
+      // a race (two requests at once) just results in an error here.
     } finally {
       setBusy(null);
     }
@@ -185,7 +245,10 @@ export default function NearbyReal() {
             <NearbyCard
               key={p.uid}
               p={p}
+              viewerTier={myTier}
+              friendship={friendships[p.uid] ?? null}
               onBlock={() => handleBlock(p.uid)}
+              onFriendRequest={() => handleFriendRequest(p)}
               busy={busy === p.uid}
             />
           ))}
@@ -197,14 +260,41 @@ export default function NearbyReal() {
 
 function NearbyCard({
   p,
+  viewerTier,
+  friendship,
   onBlock,
+  onFriendRequest,
   busy,
 }: {
   p: NearbyProfile;
+  viewerTier: number;
+  friendship: Friendship | null;
   onBlock: () => void;
+  onFriendRequest: () => void;
   busy: boolean;
 }) {
   const tierLabel = TIER_LABELS[p.currentTier] ?? "";
+  const eligibility = canSendFriendRequest(
+    { currentTier: viewerTier },
+    { privacy: p.privacy, currentTier: p.currentTier },
+    friendship
+  );
+  const trust = computeTrustLevel(friendship);
+
+  let friendCta: { label: string; disabled: boolean; title?: string };
+  if (friendship?.status === "accepted") {
+    friendCta = {
+      label: trust === "trusted" ? "Trusted friend" : "Friends",
+      disabled: true,
+    };
+  } else if (friendship?.status === "pending") {
+    friendCta = { label: "Pending…", disabled: true };
+  } else if (eligibility.ok) {
+    friendCta = { label: busy ? "Sending…" : "Friend request", disabled: busy };
+  } else {
+    friendCta = { label: "Can't request", disabled: true, title: eligibility.reason };
+  }
+
   return (
     <div className="skater-card">
       <div className="head">
@@ -241,8 +331,16 @@ function NearbyCard({
         <Tag tone="outline">{p.landedCount} LANDED</Tag>
       </div>
       <div className="actions">
-        <Button size="sm" variant="ghost" disabled>
-          Friend request
+        <Button
+          size="sm"
+          variant={
+            friendship?.status === "accepted" ? "mint" : "primary"
+          }
+          onClick={onFriendRequest}
+          disabled={friendCta.disabled}
+          title={friendCta.title}
+        >
+          {friendCta.label}
         </Button>
         <Button size="sm" variant="ghost" onClick={onBlock} disabled={busy}>
           {busy ? "…" : "Block"}

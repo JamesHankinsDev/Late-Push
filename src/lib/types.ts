@@ -153,6 +153,24 @@ export interface Block {
   createdAt: string;
 }
 
+export type FriendshipStatus = "pending" | "accepted";
+export type TrustLevel = "stranger" | "friend" | "trusted";
+
+export interface Friendship {
+  id: string; // composite: `${minUid}__${maxUid}`
+  userA: string; // lexicographically smaller uid
+  userB: string; // lexicographically larger uid
+  aliasA?: string; // denormalized at request time for listing
+  aliasB?: string;
+  aliasColorA?: string;
+  aliasColorB?: string;
+  status: FriendshipStatus;
+  initiatedBy: string; // uid that sent the original request
+  createdAt: string;
+  acceptedAt?: string;
+  messageCount?: number; // updated by DMs (phase 7F)
+}
+
 export interface UserProfile {
   uid: string;
   email: string;

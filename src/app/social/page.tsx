@@ -15,6 +15,7 @@ import {
   MeetupsTab,
   FeedTab,
 } from "@/components/social/tabs";
+import FriendsTab from "@/components/social/FriendsTab";
 import {
   LiveNowWidget,
   LeaderboardWidget,
@@ -23,10 +24,11 @@ import {
 import SocialOff from "@/components/social/SocialOff";
 import NearbyReal from "@/components/social/NearbyReal";
 
-type TabId = "nearby" | "crews" | "meetups" | "feed";
+type TabId = "nearby" | "friends" | "crews" | "meetups" | "feed";
 
 const TABS: { id: TabId; lbl: string; ct: number }[] = [
   { id: "nearby", lbl: "NEARBY", ct: MOCK_SKATERS.length },
+  { id: "friends", lbl: "FRIENDS", ct: 0 }, // populated from live data
   { id: "crews", lbl: "CREWS", ct: MOCK_CREWS.length },
   { id: "meetups", lbl: "MEETUPS", ct: MOCK_MEETUPS.length },
   { id: "feed", lbl: "FEED", ct: MOCK_FEED.length },
@@ -62,8 +64,8 @@ export default function SocialPage() {
 
   return (
     <div>
-      {/* Preview notice for non-Nearby tabs (still mocked during 7A) */}
-      {tab !== "nearby" && (
+      {/* Preview notice for still-mocked tabs (Crews / Meetups / Feed) */}
+      {tab !== "nearby" && tab !== "friends" && (
         <div
           className="card-dark"
           style={{
@@ -115,6 +117,7 @@ export default function SocialPage() {
       <div className="social-layout">
         <div>
           {tab === "nearby" && <NearbyReal />}
+          {tab === "friends" && <FriendsTab />}
           {tab === "crews" && <CrewsTab />}
           {tab === "meetups" && <MeetupsTab />}
           {tab === "feed" && <FeedTab />}
