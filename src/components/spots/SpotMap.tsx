@@ -29,7 +29,20 @@ export default function SpotMap({ spots, userLocation }: SpotMapProps) {
     if (!mapRef.current || !userLocation) return;
     if (mapInstanceRef.current) return;
 
+    let cancelled = false;
+
     import("leaflet").then((L) => {
+      // Cancellation + re-entry guards: React 18 strict mode double-mounts
+      // effects, so the first mount's async import can resolve after the
+      // second mount has already initialized. Without this, Leaflet throws
+      // "Map container is already initialized."
+      if (cancelled) return;
+      const container = mapRef.current;
+      if (!container) return;
+      if (mapInstanceRef.current) return;
+      if ((container as HTMLDivElement & { _leaflet_id?: number })._leaflet_id)
+        return;
+
       delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)
         ._getIconUrl;
       L.Icon.Default.mergeOptions({
@@ -41,7 +54,7 @@ export default function SpotMap({ spots, userLocation }: SpotMapProps) {
           "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
       });
 
-      const map = L.map(mapRef.current!, {
+      const map = L.map(container, {
         center: [userLocation.lat, userLocation.lng],
         zoom: 13,
       });
@@ -75,18 +88,24 @@ export default function SpotMap({ spots, userLocation }: SpotMapProps) {
     });
 
     return () => {
+      cancelled = true;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      setReady(false);
     };
   }, [userLocation]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !ready) return;
 
+    let cancelled = false;
+
     import("leaflet").then((L) => {
-      const map = mapInstanceRef.current!;
+      if (cancelled) return;
+      const map = mapInstanceRef.current;
+      if (!map) return;
 
       markersRef.current.forEach((m) => map.removeLayer(m));
       markersRef.current = [];
@@ -138,6 +157,10 @@ export default function SpotMap({ spots, userLocation }: SpotMapProps) {
         markersRef.current.push(marker);
       });
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [spots, ready]);
 
   if (!userLocation) {
