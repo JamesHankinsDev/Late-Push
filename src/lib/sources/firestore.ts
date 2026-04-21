@@ -87,12 +87,43 @@ export async function createUserProfile(profile: UserProfile): Promise<void> {
   await setDoc(docRef, stripUndefined(profile as unknown as Record<string, unknown>));
 }
 
+// Fields whose change must propagate to the public-profile denormalization.
+const PUBLIC_MIRROR_KEYS: (keyof UserProfile)[] = [
+  "alias",
+  "aliasLower",
+  "aliasColor",
+  "currentTier",
+  "badges",
+  "homeSpotId",
+  "homeSpotName",
+  "homeSpotLat",
+  "homeSpotLng",
+  "goals",
+  "vibe",
+  "privacy",
+  "trickProgress",
+];
+
 export async function updateUserProfile(
   uid: string,
   updates: Partial<UserProfile>
 ): Promise<void> {
   const docRef = doc(getFirebaseDb(), "users", uid);
   await updateDoc(docRef, stripUndefined(updates as Record<string, unknown>));
+
+  // Re-sync the public projection if any mirrored field changed. Done with a
+  // lazy require to break a circular import between firestore.ts and
+  // publicProfiles.ts (which imports blocks which imports firebase).
+  const needsSync = PUBLIC_MIRROR_KEYS.some((k) =>
+    Object.prototype.hasOwnProperty.call(updates, k)
+  );
+  if (needsSync) {
+    const [{ syncPublicProfile }, fresh] = await Promise.all([
+      import("./publicProfiles"),
+      getUserProfile(uid),
+    ]);
+    if (fresh) await syncPublicProfile(fresh);
+  }
 }
 
 export async function updateTrickProgress(
@@ -104,6 +135,13 @@ export async function updateTrickProgress(
   await updateDoc(docRef, {
     [`trickProgress.${trickId}`]: progress,
   });
+  // trickProgress changes affect `workingOn` and `landedCount` on the
+  // public profile. Lazy-import to avoid circular deps.
+  const [{ syncPublicProfile }, fresh] = await Promise.all([
+    import("./publicProfiles"),
+    getUserProfile(uid),
+  ]);
+  if (fresh) await syncPublicProfile(fresh);
 }
 
 // ==================== Sessions ====================

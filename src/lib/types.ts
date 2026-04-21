@@ -88,6 +88,71 @@ export interface WeatherData {
 
 export type Stance = "regular" | "goofy" | "switch" | "unsure";
 
+// =============================================================
+// Social / privacy
+// =============================================================
+
+export type ContactGroup = "none" | "friends" | "everyone";
+
+export interface PrivacySettings {
+  // Master switch — off means you don't exist to other users anywhere.
+  socialEnabled: boolean;
+
+  // Discovery surfaces — where you show up
+  discoverableInNearby: boolean;
+  discoverableInLeaderboard: boolean;
+  profileLookupByHandle: boolean;
+
+  // Location — never precise GPS, always home-spot anchored
+  shareHomeSpot: boolean; // if false, Nearby matching is disabled entirely
+
+  // Contact permissions
+  dmsFrom: ContactGroup;
+  friendRequestsFrom: ContactGroup | "tier-matches";
+  crewInvitesFrom: ContactGroup;
+}
+
+export interface PublicProfile {
+  uid: string;
+  alias: string; // display-cased
+  aliasLower: string; // lowercase for lookup/uniqueness
+  aliasColor: string; // hex
+  currentTier: number;
+  daysAsMember: number;
+  landedCount: number;
+  workingOn: string[]; // trick names with status === "practicing"
+  earnedBadges: string[]; // badge ids
+  homeSpotId?: string;
+  homeSpotName?: string;
+  homeSpotLat?: number;
+  homeSpotLng?: number;
+  goals?: string[];
+  vibe?: string[];
+  privacy: Pick<
+    PrivacySettings,
+    | "socialEnabled"
+    | "discoverableInNearby"
+    | "discoverableInLeaderboard"
+    | "profileLookupByHandle"
+    | "dmsFrom"
+    | "friendRequestsFrom"
+    | "crewInvitesFrom"
+  >;
+  updatedAt: string;
+}
+
+export interface AliasDoc {
+  uid: string;
+  claimedAt: string;
+}
+
+export interface Block {
+  id?: string;
+  blockerUid: string;
+  blockedUid: string;
+  createdAt: string;
+}
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -101,9 +166,21 @@ export interface UserProfile {
   // in for legacy profiles with existing trick progress.
   onboardedAt?: string;
   stance?: Stance;
-  goals?: string[]; // e.g. ["Ollie", "Cruise comfortably"]
-  vibe?: string[]; // e.g. ["chill", "evenings", "progression"]
+  goals?: string[];
+  vibe?: string[];
   bio?: string;
+
+  // Social — opt-in surfaces. Defaults applied on read if absent.
+  alias?: string; // display-cased
+  aliasLower?: string; // canonical lookup key
+  aliasColor?: string;
+  aliasChangedAt?: string;
+  homeSpotId?: string;
+  homeSpotName?: string; // denormalized for display + publicProfile sync
+  homeSpotLat?: number;
+  homeSpotLng?: number;
+  nearbyRadiusMi?: number; // default 5
+  privacy?: PrivacySettings;
 }
 
 export type SpotSource = "osm" | "seed" | "user";

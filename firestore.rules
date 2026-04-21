@@ -3,18 +3,83 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users can only read/write their own profile
+    // ============================================================
+    // Users — private. Only the owner can read/write their own doc.
+    // The PUBLIC view of a user lives in /publicProfiles.
+    // ============================================================
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
     }
 
-    // Users can only read/write their own sessions
+    // ============================================================
+    // Public profiles — denormalized, opt-in view of a user.
+    // Written only by the owning user; readable by any signed-in
+    // user IF the target has socialEnabled.
+    // ============================================================
+    match /publicProfiles/{uid} {
+      allow read: if request.auth != null
+        && resource.data.privacy.socialEnabled == true;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid;
+      allow delete: if request.auth != null
+        && request.auth.uid == uid;
+    }
+
+    // ============================================================
+    // Aliases — uniqueness lock. Keyed by lowercase alias.
+    // - Anyone signed in can read (to check availability / resolve).
+    // - Create only if alias doc doesn't exist AND claimed-by matches
+    //   the authenticated user.
+    // - Delete only by the owning user.
+    // ============================================================
+    match /aliases/{alias} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.uid == request.auth.uid;
+      allow update: if false;
+    }
+
+    // ============================================================
+    // Blocks — each user manages their own block list; nobody else
+    // can see it.
+    // ============================================================
+    match /blocks/{id} {
+      allow read: if request.auth != null
+        && resource.data.blockerUid == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.blockerUid == request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.blockerUid == request.auth.uid;
+      allow update: if false;
+    }
+
+    // ============================================================
+    // Moderation queue — write-only from the client (to report content).
+    // Reads happen server-side by future moderation tooling.
+    // ============================================================
+    match /moderation_queue/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.reporterUid == request.auth.uid;
+      allow read, update, delete: if false;
+    }
+
+    // ============================================================
+    // Sessions — owner-only.
+    // ============================================================
     match /sessions/{sessionId} {
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
     }
 
-    // YouTube cache is readable by any authenticated user, writable by server only
+    // ============================================================
+    // YouTube cache — readable by any authed user, server writes.
+    // ============================================================
     match /youtubeCache/{docId} {
       allow read: if request.auth != null;
     }
