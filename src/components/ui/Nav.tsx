@@ -13,7 +13,13 @@ const NAV_ITEMS = [
   { href: "/profile", label: "PROFILE", n: "04" },
 ];
 
-const TIER_LABELS = ["STARTER", "FOUNDATIONS", "MANEUVERING", "FIRST TRICKS", "INTERMEDIATE"];
+const TIER_LABELS = [
+  "STARTER",
+  "FOUNDATIONS",
+  "MANEUVERING",
+  "FIRST TRICKS",
+  "INTERMEDIATE",
+];
 
 function initialsFrom(name: string | null | undefined): string {
   if (!name) return "YO";
@@ -27,9 +33,6 @@ export default function Nav() {
   const pathname = usePathname();
   const { profile, signOut } = useAuthContext();
 
-  // Progress within the current tier drives the nav bar — lightweight stand-in
-  // for the design's XP bar until a real XP system exists. Renders a dimmed
-  // skeleton while the profile doc is still loading so the rail is never blank.
   const currentTier = profile?.currentTier ?? 0;
   const tierTricks = TRICKS.filter((t) => t.tier === currentTier);
   const landedInTier = profile
@@ -43,6 +46,9 @@ export default function Nav() {
     : 0;
   const tierLabel = TIER_LABELS[currentTier] ?? "";
   const tierName = TIERS[currentTier]?.name ?? "";
+
+  const logActive =
+    pathname === "/sessions/new" || pathname.startsWith("/sessions/new");
 
   return (
     <nav className="nav">
@@ -78,10 +84,19 @@ export default function Nav() {
         })}
       </div>
 
+      {/* Log session CTA — always visible, prominent */}
+      <Link
+        href="/sessions/new"
+        className={`nav-log-cta ${logActive ? "active" : ""}`}
+      >
+        <span className="plus">+</span>
+        <span>LOG SESSION</span>
+      </Link>
+
       <div
         className="nav-tier-bar"
         style={{
-          marginTop: 20,
+          marginTop: 18,
           padding: "10px 12px",
           border: "1px dashed var(--ink-3)",
           borderRadius: 10,

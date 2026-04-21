@@ -188,9 +188,22 @@ export default function DashboardPage() {
       {/* Recent sessions */}
       <div className="sec-head">
         <h3>Recent Sessions</h3>
-        <Link href="/sessions" className="label" style={{ color: "var(--hazard)" }}>
-          VIEW ALL →
-        </Link>
+        <div style={{ display: "flex", gap: 14, alignItems: "baseline" }}>
+          <Link
+            href="/sessions/new"
+            className="label"
+            style={{ color: "var(--hazard)" }}
+          >
+            + LOG SESSION
+          </Link>
+          <Link
+            href="/sessions"
+            className="label"
+            style={{ color: "var(--paper-dim)" }}
+          >
+            VIEW ALL →
+          </Link>
+        </div>
       </div>
       {sessions.length === 0 ? (
         <div className="card-dark" style={{ padding: 32, textAlign: "center" }}>

@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useAuthContext } from "@/components/AuthProvider";
 import SessionForm from "@/components/sessions/SessionForm";
 import CoachResponse from "@/components/sessions/CoachResponse";
-import { createSession, getUserSessions, updateSession } from "@/lib/sources/firestore";
+import {
+  createSession,
+  getUserSessions,
+  updateSession,
+} from "@/lib/sources/firestore";
 import { getTrickById } from "@/lib/curriculum";
 import { BodyFeel, Session } from "@/lib/types";
+import { Button, Eyebrow } from "@/components/ui/primitives";
 
 type Outcome = "landed" | "close" | "bailed" | "injured";
 
@@ -23,12 +29,12 @@ const OUTCOME_TO_PREFILL: Record<
 
 export default function NewSessionPage() {
   const { profile, refreshSessions } = useAuthContext();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [coachResponse, setCoachResponse] = useState("");
   const [coachLoading, setCoachLoading] = useState(false);
   const [sessionSaved, setSessionSaved] = useState(false);
+  const [error, setError] = useState("");
 
   const trickIdParam = searchParams.get("trickId");
   const outcomeParam = searchParams.get("outcome") as Outcome | null;
@@ -39,24 +45,43 @@ export default function NewSessionPage() {
   const handleSubmit = async (
     sessionData: Omit<Session, "id" | "userId" | "createdAt" | "coachResponse">
   ) => {
-    if (!profile) return;
+    if (!profile) {
+      setError("You need to be signed in to log a session.");
+      return;
+    }
+    setError("");
     setLoading(true);
 
+    let sessionId: string;
     try {
-      // Save session
-      const sessionId = await createSession({
+      sessionId = await createSession({
         ...sessionData,
         userId: profile.uid,
         createdAt: new Date().toISOString(),
       });
-
-      setSessionSaved(true);
+    } catch (err: unknown) {
+      console.error("createSession failed:", err);
+      setError(
+        err instanceof Error
+          ? `Couldn't save the session: ${err.message}`
+          : "Couldn't save the session. Check your connection and try again."
+      );
       setLoading(false);
-      setCoachLoading(true);
+      return;
+    }
 
-      // Fetch coach response
+    setSessionSaved(true);
+    setLoading(false);
+    setCoachLoading(true);
+
+    try {
       const allSessions = await getUserSessions(profile.uid);
-      const currentSession = { id: sessionId, ...sessionData, userId: profile.uid, createdAt: new Date().toISOString() };
+      const currentSession = {
+        id: sessionId,
+        ...sessionData,
+        userId: profile.uid,
+        createdAt: new Date().toISOString(),
+      };
 
       const coachRes = await fetch("/api/coach", {
         method: "POST",
@@ -72,31 +97,45 @@ export default function NewSessionPage() {
       if (coachRes.ok) {
         const data = await coachRes.json();
         setCoachResponse(data.response);
-        // Save coach response to session
         await updateSession(sessionId, { coachResponse: data.response });
       }
 
-      // Invalidate the shared sessions cache so dashboard/profile reflect
-      // the new session on their next render.
       await refreshSessions();
-    } catch (error) {
-      console.error("Error saving session:", error);
+    } catch (err) {
+      console.error("Coach response failed:", err);
+      // The session still saved — just no coach response.
     } finally {
-      setLoading(false);
       setCoachLoading(false);
     }
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-lg mx-auto">
-      <div className="mb-6">
-        <h1 className="font-display text-3xl font-bold text-white">
-          Log Session
+    <div style={{ maxWidth: 640, margin: "0 auto" }}>
+      <div style={{ marginBottom: 24 }}>
+        <Eyebrow>LOG A SESSION</Eyebrow>
+        <h1 className="hed hed-l" style={{ marginTop: 10 }}>
+          What went down?
         </h1>
-        <p className="text-sm text-concrete-400 mt-1">
-          Track what you worked on. Your AI coach will review it.
+        <p className="dim" style={{ maxWidth: "52ch", marginTop: 8 }}>
+          Track what you worked on. Your AI coach reviews every session and
+          writes back. More detail = better feedback, but a quick log still
+          counts.
         </p>
       </div>
+
+      {error && (
+        <div
+          className="card-dark"
+          style={{
+            padding: "12px 16px",
+            marginBottom: 20,
+            borderColor: "var(--coral)",
+            color: "var(--coral)",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       {!sessionSaved ? (
         <SessionForm
@@ -108,40 +147,61 @@ export default function NewSessionPage() {
           initialBodyFeel={prefill.bodyFeel}
         />
       ) : (
-        <div className="space-y-6">
-          <div className="bg-concrete-800 border border-skate-lime/30 rounded-lg p-4 text-center">
-            <p className="text-skate-lime font-display font-bold text-lg">
-              Session Logged!
-            </p>
-            <p className="text-sm text-concrete-400 mt-1">
+        <div style={{ display: "grid", gap: 20 }}>
+          <div
+            className="card-dark"
+            style={{
+              padding: 20,
+              borderColor: "var(--mint)",
+              background: "rgba(120,209,154,0.06)",
+              textAlign: "center",
+            }}
+          >
+            <Eyebrow tone="mint">SESSION LOGGED</Eyebrow>
+            <p
+              style={{
+                fontFamily: "var(--hammer)",
+                fontSize: 28,
+                letterSpacing: "0.02em",
+                marginTop: 10,
+                marginBottom: 4,
+              }}
+            >
               Nice work getting out there.
+            </p>
+            <p className="dim" style={{ fontSize: 13 }}>
+              Your coach is writing back below.
             </p>
           </div>
 
           <CoachResponse response={coachResponse} loading={coachLoading} />
 
-          <div className="flex gap-3">
-            <button
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <Button
+              variant="ghost"
               onClick={() => {
                 setSessionSaved(false);
                 setCoachResponse("");
               }}
-              className="flex-1 py-2 rounded-lg bg-concrete-800 border border-concrete-700 text-white text-sm hover:bg-concrete-700 transition-colors"
             >
-              Log Another
-            </button>
-            <button
-              onClick={() => router.push("/sessions")}
-              className="flex-1 py-2 rounded-lg bg-concrete-800 border border-concrete-700 text-white text-sm hover:bg-concrete-700 transition-colors"
-            >
-              View Sessions
-            </button>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="flex-1 py-2 rounded-lg bg-skate-lime text-concrete-950 text-sm font-bold hover:bg-skate-lime/90 transition-colors"
-            >
-              Dashboard
-            </button>
+              Log another
+            </Button>
+            <Link href="/sessions" style={{ flex: 1 }}>
+              <Button variant="ghost" style={{ width: "100%", justifyContent: "center" }}>
+                View sessions
+              </Button>
+            </Link>
+            <Link href="/dashboard" style={{ flex: 1 }}>
+              <Button variant="primary" style={{ width: "100%", justifyContent: "center" }}>
+                Dashboard →
+              </Button>
+            </Link>
           </div>
         </div>
       )}

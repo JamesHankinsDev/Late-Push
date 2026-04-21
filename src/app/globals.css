@@ -237,6 +237,38 @@ a {
   letter-spacing: 0.02em;
 }
 
+/* Log session CTA (desktop — styled button above profile chip) */
+.nav-log-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: var(--hazard);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: var(--r-s);
+  font-family: var(--display);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  box-shadow: var(--shadow-hard-sm);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.nav-log-cta:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.nav-log-cta:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+.nav-log-cta .plus {
+  font-family: var(--hammer);
+  font-size: 18px;
+  line-height: 1;
+}
+
 .nav-profile {
   margin-top: auto;
   padding: 12px;
@@ -2453,6 +2485,8 @@ body.type-condensed {
     width: 100%;
     gap: 4px;
     align-items: stretch;
+    /* Leave room in the middle for the raised Log CTA */
+    order: 1;
   }
   .nav-item {
     flex: 1;
@@ -2463,6 +2497,22 @@ body.type-condensed {
   }
   .nav-item.active::before {
     display: none;
+  }
+  /* Mobile: Log CTA becomes a compact raised FAB floating above the bar */
+  .nav-log-cta {
+    position: fixed;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    right: 18px;
+    margin-top: 0;
+    padding: 12px 16px;
+    border-radius: 999px;
+    z-index: 51;
+    font-size: 12px;
+    box-shadow: 3px 3px 0 var(--ink), 0 8px 20px -4px rgba(0, 0, 0, 0.5);
+  }
+  .nav-log-cta:hover {
+    transform: none;
+    box-shadow: 3px 3px 0 var(--ink), 0 8px 20px -4px rgba(0, 0, 0, 0.5);
   }
 
   /* Typography scale */

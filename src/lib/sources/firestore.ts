@@ -14,6 +14,19 @@ import {
 import { getFirebaseDb } from "../firebase";
 import { UserProfile, Session, TrickProgress, TrickStatus } from "../types";
 
+/**
+ * Firestore rejects `undefined` field values at write time with a runtime
+ * error ("Function addDoc() called with invalid data"). Strip them so
+ * callers can pass optional fields as `undefined` freely.
+ */
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out as T;
+}
+
 // Migration helper: maps legacy 3-state status to new 5-state status, and
 // fills in currentTier from currentStage if needed.
 function migrateProfile(raw: Record<string, unknown>): UserProfile {
@@ -71,7 +84,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 
 export async function createUserProfile(profile: UserProfile): Promise<void> {
   const docRef = doc(getFirebaseDb(), "users", profile.uid);
-  await setDoc(docRef, profile);
+  await setDoc(docRef, stripUndefined(profile as unknown as Record<string, unknown>));
 }
 
 export async function updateUserProfile(
@@ -79,7 +92,7 @@ export async function updateUserProfile(
   updates: Partial<UserProfile>
 ): Promise<void> {
   const docRef = doc(getFirebaseDb(), "users", uid);
-  await updateDoc(docRef, updates);
+  await updateDoc(docRef, stripUndefined(updates as Record<string, unknown>));
 }
 
 export async function updateTrickProgress(
@@ -97,10 +110,11 @@ export async function updateTrickProgress(
 
 export async function createSession(session: Omit<Session, "id">): Promise<string> {
   const colRef = collection(getFirebaseDb(), "sessions");
-  const docRef = await addDoc(colRef, {
+  const payload = stripUndefined({
     ...session,
-    createdAt: new Date().toISOString(),
+    createdAt: session.createdAt ?? new Date().toISOString(),
   });
+  const docRef = await addDoc(colRef, payload);
   return docRef.id;
 }
 
@@ -123,7 +137,7 @@ export async function updateSession(
   updates: Partial<Session>
 ): Promise<void> {
   const docRef = doc(getFirebaseDb(), "sessions", sessionId);
-  await updateDoc(docRef, updates);
+  await updateDoc(docRef, stripUndefined(updates as Record<string, unknown>));
 }
 
 // ==================== YouTube Cache ====================
