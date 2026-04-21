@@ -106,6 +106,8 @@ export interface UserProfile {
   bio?: string;
 }
 
+export type SpotSource = "osm" | "seed" | "user";
+
 export interface SkateSpot {
   id: string;
   name: string;
@@ -116,6 +118,7 @@ export interface SkateSpot {
   surface?: string;
   beginnerFriendly: boolean;
   tags: string[];
+  source?: SpotSource;
 }
 
 export interface YouTubeVideo {

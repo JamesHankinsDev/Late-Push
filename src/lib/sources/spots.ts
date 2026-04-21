@@ -1,9 +1,38 @@
 import { SkateSpot } from "../types";
+import { findSeedSpotsNear } from "./seedSpots";
+
+// Two spots this close are treated as duplicates. OSM and seed entries
+// for the same park won't match exactly, so we fuzzy-match by proximity.
+const DEDUPE_RADIUS_MI = 0.1; // ~530 ft
 
 export async function findSkateSpots(
   lat: number,
   lng: number,
   radiusMeters: number = 10000
+): Promise<SkateSpot[]> {
+  const osmSpots = await fetchOsmSpots(lat, lng, radiusMeters);
+  const seedSpots = findSeedSpotsNear(lat, lng, radiusMeters);
+
+  // Prefer OSM entries when they overlap with a seed (OSM is "live"
+  // community-maintained data). Seed fills the gaps.
+  const merged: SkateSpot[] = [...osmSpots];
+  for (const seed of seedSpots) {
+    const nearby = merged.find(
+      (m) =>
+        haversineMiles(m.lat, m.lng, seed.lat, seed.lng) < DEDUPE_RADIUS_MI
+    );
+    if (!nearby) merged.push(seed);
+  }
+
+  return merged.sort(
+    (a, b) => (a.distance ?? 999) - (b.distance ?? 999)
+  );
+}
+
+async function fetchOsmSpots(
+  lat: number,
+  lng: number,
+  radiusMeters: number
 ): Promise<SkateSpot[]> {
   const query = `
     [out:json][timeout:25];
@@ -15,55 +44,68 @@ export async function findSkateSpots(
     out center;
   `;
 
-  const res = await fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `data=${encodeURIComponent(query)}`,
-  });
-
-  if (!res.ok) {
-    throw new Error(`Overpass API error: ${res.status}`);
+  let data: { elements?: Record<string, unknown>[] } = {};
+  try {
+    const res = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(query)}`,
+    });
+    if (!res.ok) {
+      console.warn(`Overpass API ${res.status}; falling back to seed only`);
+      return [];
+    }
+    data = await res.json();
+  } catch (e) {
+    console.warn("Overpass fetch failed; falling back to seed only", e);
+    return [];
   }
 
-  const data = await res.json();
-
-  return data.elements
-    .map((el: Record<string, unknown>) => {
+  return (data.elements ?? [])
+    .map((el): SkateSpot | null => {
       const elLat = (el.lat as number) ?? (el.center as { lat: number })?.lat;
       const elLng = (el.lon as number) ?? (el.center as { lon: number })?.lon;
       if (!elLat || !elLng) return null;
 
       const tags = (el.tags ?? {}) as Record<string, string>;
-      const baseName = tags.name
-        || tags["name:en"]
-        || tags.description
-        || (tags["addr:street"] ? `Spot on ${tags["addr:street"]}` : null)
-        || (tags.leisure === "skatepark" ? "Skatepark" : "Skate Spot");
-      const name = tags["addr:city"] && !baseName.includes(tags["addr:city"])
-        ? `${baseName} — ${tags["addr:city"]}`
-        : baseName;
-      const surface = tags.surface || undefined;
-
-      const distance = haversineDistance(lat, lng, elLat, elLng);
-
-      const beginnerFriendly = isBeginnerFriendly(tags);
+      const baseName =
+        tags.name ||
+        tags["name:en"] ||
+        tags.description ||
+        (tags["addr:street"] ? `Spot on ${tags["addr:street"]}` : null) ||
+        (tags.leisure === "skatepark" ? "Skatepark" : "Skate Spot");
+      const name =
+        tags["addr:city"] && !baseName.includes(tags["addr:city"])
+          ? `${baseName} — ${tags["addr:city"]}`
+          : baseName;
 
       return {
         id: `osm-${el.id}`,
         name,
         lat: elLat,
         lng: elLng,
-        distance: Math.round(distance * 10) / 10,
+        distance: Math.round(haversineMiles(lat, lng, elLat, elLng) * 10) / 10,
         type: tags.leisure || "skatepark",
-        surface,
-        beginnerFriendly,
+        surface: tags.surface || undefined,
+        beginnerFriendly: isBeginnerFriendly(tags),
         tags: Object.entries(tags)
-          .filter(([k]) => ["surface", "lit", "access", "wheelchair", "opening_hours", "fee", "operator", "website"].includes(k))
+          .filter(([k]) =>
+            [
+              "surface",
+              "lit",
+              "access",
+              "wheelchair",
+              "opening_hours",
+              "fee",
+              "operator",
+              "website",
+            ].includes(k)
+          )
           .map(([k, v]) => `${k}: ${v}`),
-      } as SkateSpot;
+        source: "osm" as const,
+      };
     })
-    .filter((s: SkateSpot | null): s is SkateSpot => s !== null)
-    .sort((a: SkateSpot, b: SkateSpot) => (a.distance ?? 999) - (b.distance ?? 999));
+    .filter((s): s is SkateSpot => s !== null);
 }
 
 function isBeginnerFriendly(tags: Record<string, string>): boolean {
@@ -81,7 +123,7 @@ function isBeginnerFriendly(tags: Record<string, string>): boolean {
   return false;
 }
 
-function haversineDistance(
+function haversineMiles(
   lat1: number,
   lon1: number,
   lat2: number,

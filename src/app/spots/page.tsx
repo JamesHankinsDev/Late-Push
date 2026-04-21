@@ -283,9 +283,12 @@ export default function SpotsPage() {
                     <span>{spot.type.replace("_", " ")}</span>
                   </div>
                 </div>
-                {spot.beginnerFriendly && (
-                  <Tag tone="mint">BEGINNER FRIENDLY</Tag>
-                )}
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {spot.source === "seed" && <Tag tone="violet">CURATED</Tag>}
+                  {spot.beginnerFriendly && (
+                    <Tag tone="mint">BEGINNER FRIENDLY</Tag>
+                  )}
+                </div>
               </div>
               {spot.tags.length > 0 && (
                 <div

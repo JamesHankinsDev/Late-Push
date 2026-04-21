@@ -18,6 +18,7 @@ const PAPER = "#f2ece0";
 const HAZARD = "#f5d400";
 const MINT = "#78d19a";
 const SKY = "#7ec7ff";
+const VIOLET = "#b38cff";
 
 export default function SpotMap({ spots, userLocation }: SpotMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -140,8 +141,18 @@ export default function SpotMap({ spots, userLocation }: SpotMapProps) {
               </div>`
             : "";
 
-        const beginnerChip = spot.beginnerFriendly
-          ? `<div style="margin-top:6px;display:inline-block;font-family:JetBrains Mono,monospace;font-size:10px;background:${MINT};color:${INK};padding:2px 8px;border-radius:3px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;">BEGINNER FRIENDLY</div>`
+        const chips = [
+          spot.source === "seed"
+            ? `<span style="display:inline-block;font-family:JetBrains Mono,monospace;font-size:10px;background:${VIOLET};color:${INK};padding:2px 8px;border-radius:3px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;margin-right:6px;">CURATED</span>`
+            : "",
+          spot.beginnerFriendly
+            ? `<span style="display:inline-block;font-family:JetBrains Mono,monospace;font-size:10px;background:${MINT};color:${INK};padding:2px 8px;border-radius:3px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;">BEGINNER FRIENDLY</span>`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("");
+        const chipsRow = chips
+          ? `<div style="margin-top:6px;">${chips}</div>`
           : "";
 
         const marker = L.marker([spot.lat, spot.lng], { icon: spotIcon }).addTo(
@@ -151,7 +162,7 @@ export default function SpotMap({ spots, userLocation }: SpotMapProps) {
           popupHtml({
             title: spot.name,
             meta,
-            extra: beginnerChip + tagsHtml,
+            extra: chipsRow + tagsHtml,
           })
         );
         markersRef.current.push(marker);
