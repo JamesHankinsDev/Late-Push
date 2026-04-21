@@ -197,6 +197,41 @@ export interface CrewInvite {
   createdAt: string;
 }
 
+export type MeetupVisibility = "public" | "crew-only";
+export type RsvpStatus = "going" | "maybe" | "not-going";
+
+export interface Meetup {
+  id: string;
+  title: string;
+  focus: string; // what the session is about
+  hostUid: string;
+  hostAlias: string; // denormalized
+  hostAliasColor?: string;
+  crewId?: string; // optional crew scope
+  crewName?: string; // denormalized if crew-scoped
+  crewTag?: string;
+  crewColor?: string;
+  spotId: string;
+  spotName: string;
+  spotLat: number;
+  spotLng: number;
+  date: string; // ISO "YYYY-MM-DD"
+  time?: string; // free-text like "6:30 PM"
+  visibility: MeetupVisibility;
+  goingCount: number; // denormalized from RSVPs
+  createdAt: string;
+}
+
+export interface MeetupRsvp {
+  id: string; // `${meetupId}__${uid}`
+  meetupId: string;
+  uid: string;
+  alias?: string;
+  aliasColor?: string;
+  status: RsvpStatus;
+  createdAt: string;
+}
+
 export interface Friendship {
   id: string; // composite: `${minUid}__${maxUid}`
   userA: string; // lexicographically smaller uid

@@ -10,12 +10,10 @@ import {
   MOCK_MEETUPS,
   MOCK_FEED,
 } from "@/lib/social/mock";
-import {
-  MeetupsTab,
-  FeedTab,
-} from "@/components/social/tabs";
+import { FeedTab } from "@/components/social/tabs";
 import FriendsTab from "@/components/social/FriendsTab";
 import CrewsTab from "@/components/social/CrewsTab";
+import MeetupsTab from "@/components/social/MeetupsTab";
 import {
   LiveNowWidget,
   LeaderboardWidget,
@@ -64,8 +62,8 @@ export default function SocialPage() {
 
   return (
     <div>
-      {/* Preview notice for still-mocked tabs (Meetups / Feed) */}
-      {tab !== "nearby" && tab !== "friends" && tab !== "crews" && (
+      {/* Preview notice for still-mocked tabs (only Feed now) */}
+      {tab === "feed" && (
         <div
           className="card-dark"
           style={{

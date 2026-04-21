@@ -123,6 +123,62 @@ service cloud.firestore {
     }
 
     // ============================================================
+    // Meetups — public or crew-only sessions. Host is always the
+    // creator. goingCount is adjusted by the RSVP transaction which
+    // runs as the rsvping member, so updates are allowed if either
+    // the host is editing OR the only affected key is goingCount.
+    // ============================================================
+    match /meetups/{meetupId} {
+      allow read: if request.auth != null
+        && (
+          resource.data.visibility == "public"
+          || (resource.data.visibility == "crew-only"
+              && exists(/databases/$(database)/documents/crewMemberships/$(resource.data.crewId + "__" + request.auth.uid)))
+          || resource.data.hostUid == request.auth.uid
+        );
+
+      allow create: if request.auth != null
+        && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.goingCount == 1
+        && (request.resource.data.visibility == "public"
+            || request.resource.data.visibility == "crew-only")
+        && (
+          request.resource.data.visibility == "public"
+          || (request.resource.data.visibility == "crew-only"
+              && exists(/databases/$(database)/documents/crewMemberships/$(request.resource.data.crewId + "__" + request.auth.uid)))
+        );
+
+      allow update: if request.auth != null
+        && (
+          // Host edits
+          resource.data.hostUid == request.auth.uid
+          // RSVP transaction adjusts goingCount only
+          || (request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['goingCount']))
+        );
+
+      allow delete: if request.auth != null
+        && resource.data.hostUid == request.auth.uid;
+    }
+
+    match /meetupRsvps/{id} {
+      // Authed users can read RSVPs for any meetup (list attendees).
+      // In practice the meetup's own read rule gates visibility of the
+      // parent object; if someone can't see the meetup, the attendee
+      // list is irrelevant to them.
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid;
+
+      allow update: if request.auth != null
+        && resource.data.uid == request.auth.uid;
+
+      allow delete: if request.auth != null
+        && resource.data.uid == request.auth.uid;
+    }
+
+    // ============================================================
     // Friendships — one doc per pair, keyed by sorted UIDs.
     // Read/write gated on being one of the two parties.
     // ============================================================
