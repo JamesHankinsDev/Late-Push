@@ -232,6 +232,49 @@ export interface MeetupRsvp {
   createdAt: string;
 }
 
+export type PostVisibility = "public" | "friends" | "only-me";
+export type PostStamp = "LANDED" | "PROGRESS" | "BAILED" | "FIRST";
+export type ReactionType = "push" | "same" | "fire";
+
+export interface Post {
+  id: string;
+  authorUid: string;
+  authorAlias: string;
+  authorAliasColor?: string;
+  body: string;
+  sessionRef?: string; // optional session.id this post was shared from
+  trickRef?: string; // optional trick.id highlighted
+  trickName?: string; // denormalized
+  stamp?: PostStamp;
+  visibility: PostVisibility;
+  reactionCounts: {
+    push: number;
+    same: number;
+    fire: number;
+  };
+  commentCount: number;
+  createdAt: string;
+}
+
+export interface PostReaction {
+  id: string; // `${postId}__${uid}`
+  postId: string;
+  uid: string;
+  alias?: string;
+  type: ReactionType;
+  createdAt: string;
+}
+
+export interface PostComment {
+  id: string;
+  postId: string;
+  authorUid: string;
+  authorAlias: string;
+  authorAliasColor?: string;
+  body: string;
+  createdAt: string;
+}
+
 export interface Friendship {
   id: string; // composite: `${minUid}__${maxUid}`
   userA: string; // lexicographically smaller uid

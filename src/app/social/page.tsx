@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eyebrow, Tag } from "@/components/ui/primitives";
+import { Eyebrow } from "@/components/ui/primitives";
 import { useAuthContext } from "@/components/AuthProvider";
 import { mergePrivacy } from "@/lib/social/privacy";
 import {
@@ -10,10 +10,10 @@ import {
   MOCK_MEETUPS,
   MOCK_FEED,
 } from "@/lib/social/mock";
-import { FeedTab } from "@/components/social/tabs";
 import FriendsTab from "@/components/social/FriendsTab";
 import CrewsTab from "@/components/social/CrewsTab";
 import MeetupsTab from "@/components/social/MeetupsTab";
+import FeedTab from "@/components/social/FeedTab";
 import {
   LiveNowWidget,
   LeaderboardWidget,
@@ -62,28 +62,6 @@ export default function SocialPage() {
 
   return (
     <div>
-      {/* Preview notice for still-mocked tabs (only Feed now) */}
-      {tab === "feed" && (
-        <div
-          className="card-dark"
-          style={{
-            padding: "12px 18px",
-            marginBottom: 20,
-            borderColor: "var(--hazard)",
-            background: "rgba(245,212,0,0.04)",
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            flexWrap: "wrap",
-          }}
-        >
-          <Tag tone="yellow">PREVIEW</Tag>
-          <div className="dim" style={{ fontSize: 13, lineHeight: 1.5, flex: 1 }}>
-            Crews, Meetups, and Feed are still mock previews — the real
-            backend lands in later phases. Nearby is live.
-          </div>
-        </div>
-      )}
 
       <div className="social-header">
         <div>

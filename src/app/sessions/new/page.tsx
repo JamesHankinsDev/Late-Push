@@ -11,9 +11,16 @@ import {
   getUserSessions,
   updateSession,
 } from "@/lib/sources/firestore";
+import { createPost } from "@/lib/sources/posts";
 import { getTrickById } from "@/lib/curriculum";
-import { BodyFeel, Session } from "@/lib/types";
-import { Button, Eyebrow } from "@/components/ui/primitives";
+import { mergePrivacy } from "@/lib/social/privacy";
+import {
+  BodyFeel,
+  PostStamp,
+  PostVisibility,
+  Session,
+} from "@/lib/types";
+import { Button, Eyebrow, Tag } from "@/components/ui/primitives";
 
 type Outcome = "landed" | "close" | "bailed" | "injured";
 
@@ -35,6 +42,9 @@ export default function NewSessionPage() {
   const [coachLoading, setCoachLoading] = useState(false);
   const [sessionSaved, setSessionSaved] = useState(false);
   const [error, setError] = useState("");
+  const [lastSession, setLastSession] = useState<
+    (Session & { id: string }) | null
+  >(null);
 
   const trickIdParam = searchParams.get("trickId");
   const outcomeParam = searchParams.get("outcome") as Outcome | null;
@@ -53,11 +63,12 @@ export default function NewSessionPage() {
     setLoading(true);
 
     let sessionId: string;
+    const createdAt = new Date().toISOString();
     try {
       sessionId = await createSession({
         ...sessionData,
         userId: profile.uid,
-        createdAt: new Date().toISOString(),
+        createdAt,
       });
     } catch (err: unknown) {
       console.error("createSession failed:", err);
@@ -70,6 +81,12 @@ export default function NewSessionPage() {
       return;
     }
 
+    setLastSession({
+      id: sessionId,
+      ...sessionData,
+      userId: profile.uid,
+      createdAt,
+    });
     setSessionSaved(true);
     setLoading(false);
     setCoachLoading(true);
@@ -174,6 +191,10 @@ export default function NewSessionPage() {
             </p>
           </div>
 
+          {lastSession && profile && privacyAllowsShare(profile) && (
+            <ShareToFeed session={lastSession} />
+          )}
+
           <CoachResponse response={coachResponse} loading={coachLoading} />
 
           <div
@@ -203,6 +224,228 @@ export default function NewSessionPage() {
               </Button>
             </Link>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function privacyAllowsShare(profile: {
+  privacy?: import("@/lib/types").PrivacySettings;
+  alias?: string;
+}): boolean {
+  const privacy = mergePrivacy(profile.privacy);
+  return privacy.socialEnabled && !!profile.alias;
+}
+
+function ShareToFeed({
+  session,
+}: {
+  session: Session & { id: string };
+}) {
+  const { profile } = useAuthContext();
+  const [body, setBody] = useState(session.whatClicked || "");
+  const [stamp, setStamp] = useState<PostStamp>(
+    session.whatClicked ? "LANDED" : "PROGRESS"
+  );
+  const [visibility, setVisibility] = useState<PostVisibility>("friends");
+  const [posting, setPosting] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  const primaryTrick = session.tricksPracticed[0];
+  const trick = primaryTrick ? getTrickById(primaryTrick) : undefined;
+
+  if (done) {
+    return (
+      <div
+        className="card-dark"
+        style={{
+          padding: 18,
+          borderColor: "var(--mint)",
+          background: "rgba(120,209,154,0.06)",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <Tag tone="mint">SHARED</Tag>
+        <span className="dim" style={{ fontSize: 13, flex: 1 }}>
+          Your post is live on the feed.
+        </span>
+        <Link href={`/posts/${done}`}>
+          <Button variant="ghost" size="sm">
+            View post →
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  async function handleShare() {
+    if (!profile || posting) return;
+    setPosting(true);
+    setError("");
+    try {
+      const post = await createPost(
+        {
+          body: body.trim() || session.whatClicked || "Logged a session.",
+          visibility,
+          sessionRef: session.id,
+          trickRef: trick?.id,
+          trickName: trick?.name,
+          stamp,
+        },
+        {
+          uid: profile.uid,
+          alias: profile.alias ?? "",
+          aliasColor: profile.aliasColor ?? "#f5d400",
+        }
+      );
+      setDone(post.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't share that post.");
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  return (
+    <div className="card-dark" style={{ padding: 18, display: "grid", gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          flexWrap: "wrap",
+          gap: 8,
+        }}
+      >
+        <Eyebrow>SHARE TO FEED</Eyebrow>
+        <span className="label">OPTIONAL</span>
+      </div>
+      <textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        rows={2}
+        maxLength={2000}
+        placeholder="A line or two on how the session went…"
+        style={{
+          width: "100%",
+          background: "var(--ink)",
+          border: "1px solid var(--ink-3)",
+          borderRadius: "var(--r-s)",
+          padding: "10px 12px",
+          color: "var(--paper)",
+          fontFamily: "var(--body)",
+          fontSize: 14,
+          outline: "none",
+          resize: "vertical",
+          minHeight: 60,
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <span className="label">STAMP →</span>
+        {(
+          [
+            { id: "LANDED", tone: "mint" },
+            { id: "PROGRESS", tone: "yellow" },
+            { id: "BAILED", tone: "coral" },
+            { id: "FIRST", tone: "mint" },
+          ] as const
+        ).map((s) => {
+          const active = stamp === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setStamp(s.id as PostStamp)}
+              style={{
+                background: active ? "var(--hazard)" : "var(--ink)",
+                color: active ? "var(--ink)" : "var(--paper-dim)",
+                border: `1px solid ${active ? "var(--ink)" : "var(--ink-3)"}`,
+                padding: "4px 8px",
+                borderRadius: 4,
+                fontFamily: "var(--mono)",
+                fontSize: 10,
+                letterSpacing: "0.08em",
+                cursor: "pointer",
+                fontWeight: active ? 700 : 400,
+              }}
+            >
+              {s.id}
+            </button>
+          );
+        })}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <span className="label">VISIBLE TO →</span>
+        {(
+          [
+            { id: "public", lbl: "PUBLIC" },
+            { id: "friends", lbl: "FRIENDS" },
+            { id: "only-me", lbl: "ONLY ME" },
+          ] as const
+        ).map((v) => {
+          const active = visibility === v.id;
+          return (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => setVisibility(v.id)}
+              style={{
+                background: active ? "var(--hazard)" : "var(--ink)",
+                color: active ? "var(--ink)" : "var(--paper-dim)",
+                border: `1px solid ${active ? "var(--ink)" : "var(--ink-3)"}`,
+                padding: "4px 10px",
+                borderRadius: 4,
+                fontFamily: "var(--mono)",
+                fontSize: 11,
+                letterSpacing: "0.08em",
+                cursor: "pointer",
+                fontWeight: active ? 700 : 400,
+              }}
+            >
+              {v.lbl}
+            </button>
+          );
+        })}
+        <span style={{ flex: 1 }} />
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={handleShare}
+          disabled={posting || body.trim().length === 0}
+        >
+          {posting ? "Sharing…" : "Share →"}
+        </Button>
+      </div>
+      {error && (
+        <div
+          className="mono"
+          style={{
+            fontSize: 11,
+            color: "var(--coral)",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}
+        >
+          {error}
         </div>
       )}
     </div>

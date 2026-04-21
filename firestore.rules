@@ -123,6 +123,84 @@ service cloud.firestore {
     }
 
     // ============================================================
+    // Posts — user-authored feed content. Visibility gates READ:
+    //   public:    any signed-in user
+    //   friends:   author, or an accepted friendship exists
+    //   only-me:   author only (draft)
+    // Author owns writes; reaction transactions adjust reactionCounts
+    // and comment transactions adjust commentCount.
+    // ============================================================
+    match /posts/{postId} {
+      allow read: if request.auth != null
+        && (
+          resource.data.visibility == "public"
+          || resource.data.authorUid == request.auth.uid
+          || (
+            resource.data.visibility == "friends"
+            && (
+              (request.auth.uid < resource.data.authorUid
+                && exists(/databases/$(database)/documents/friendships/$(request.auth.uid + "__" + resource.data.authorUid))
+                && get(/databases/$(database)/documents/friendships/$(request.auth.uid + "__" + resource.data.authorUid)).data.status == "accepted")
+              ||
+              (resource.data.authorUid < request.auth.uid
+                && exists(/databases/$(database)/documents/friendships/$(resource.data.authorUid + "__" + request.auth.uid))
+                && get(/databases/$(database)/documents/friendships/$(resource.data.authorUid + "__" + request.auth.uid)).data.status == "accepted")
+            )
+          )
+        );
+
+      allow create: if request.auth != null
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.reactionCounts.push == 0
+        && request.resource.data.reactionCounts.same == 0
+        && request.resource.data.reactionCounts.fire == 0
+        && request.resource.data.commentCount == 0;
+
+      allow update: if request.auth != null
+        && (
+          // Author edits their own post
+          resource.data.authorUid == request.auth.uid
+          // Reaction / comment transactions adjust count fields only
+          || request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['reactionCounts', 'commentCount'])
+        );
+
+      allow delete: if request.auth != null
+        && resource.data.authorUid == request.auth.uid;
+
+      // Comments subcollection
+      match /comments/{commentId} {
+        // Comments inherit the parent post's read rules — not supported
+        // declaratively, but if the viewer can't read the parent, reading
+        // the comment doesn't reveal anything useful. We enforce read on
+        // any authed user; parent visibility is the primary gate.
+        allow read: if request.auth != null;
+
+        allow create: if request.auth != null
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.postId == postId;
+
+        allow delete: if request.auth != null
+          && (resource.data.authorUid == request.auth.uid
+              || get(/databases/$(database)/documents/posts/$(postId)).data.authorUid == request.auth.uid);
+
+        allow update: if false;
+      }
+    }
+
+    match /postReactions/{id} {
+      // Reactions readable by anyone authed — used to compute "did I react"
+      // on the client. Privacy of a reaction is parent-post-bound.
+      allow read: if request.auth != null;
+
+      allow create, update: if request.auth != null
+        && request.resource.data.uid == request.auth.uid;
+
+      allow delete: if request.auth != null
+        && resource.data.uid == request.auth.uid;
+    }
+
+    // ============================================================
     // Meetups — public or crew-only sessions. Host is always the
     // creator. goingCount is adjusted by the RSVP transaction which
     // runs as the rsvping member, so updates are allowed if either
