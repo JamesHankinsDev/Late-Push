@@ -275,6 +275,66 @@ export interface PostComment {
   createdAt: string;
 }
 
+export interface Conversation {
+  id: string; // pairId(userA, userB) — sorted
+  userA: string;
+  userB: string;
+  aliasA: string;
+  aliasB: string;
+  aliasColorA?: string;
+  aliasColorB?: string;
+  lastMessage?: string;
+  lastMessageAt?: string;
+  lastMessageBy?: string;
+  messageCount: number;
+  createdAt: string;
+}
+
+export type MessageFlag =
+  | "safe"
+  | "pii_ask"
+  | "platform_move"
+  | "pressure"
+  | "harassment"
+  | "hate_speech"
+  | "explicit";
+
+export interface DmMessage {
+  id: string;
+  conversationId: string;
+  authorUid: string;
+  authorAlias: string;
+  authorAliasColor?: string;
+  body: string;
+  sentAt: string;
+  flag?: MessageFlag; // set by Layer 2 classifier if non-safe
+  flagReason?: string; // optional human-readable reason
+}
+
+export interface LivePresence {
+  uid: string;
+  alias: string;
+  aliasColor?: string;
+  spotId?: string;
+  spotName?: string;
+  startedAt: string;
+  expiresAt: string; // ISO; client clears when user stops
+}
+
+export interface ModerationReport {
+  id?: string;
+  reporterUid: string;
+  targetUid?: string;
+  messageId?: string;
+  conversationId?: string;
+  postId?: string;
+  commentId?: string;
+  kind: "dm" | "post" | "comment" | "profile";
+  reason: string;
+  classification?: MessageFlag;
+  createdAt: string;
+}
+
 export interface Friendship {
   id: string; // composite: `${minUid}__${maxUid}`
   userA: string; // lexicographically smaller uid

@@ -4,6 +4,29 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ============================================================
+    // Helpers
+    // ============================================================
+    function friendshipPair(a, b) {
+      return a < b ? a + "__" + b : b + "__" + a;
+    }
+    function hasAcceptedFriendship(a, b) {
+      let id = friendshipPair(a, b);
+      return exists(/databases/$(database)/documents/friendships/$(id))
+        && get(/databases/$(database)/documents/friendships/$(id)).data.status == "accepted";
+    }
+    function recipientDmsFrom(uid) {
+      return get(/databases/$(database)/documents/publicProfiles/$(uid)).data.privacy.dmsFrom;
+    }
+    function canDmRecipient(uid) {
+      return exists(/databases/$(database)/documents/publicProfiles/$(uid))
+        && (
+          recipientDmsFrom(uid) == "everyone"
+          || (recipientDmsFrom(uid) == "friends"
+              && hasAcceptedFriendship(request.auth.uid, uid))
+        );
+    }
+
+    // ============================================================
     // Users — private. Only the owner can read/write their own doc.
     // The PUBLIC view of a user lives in /publicProfiles.
     // ============================================================
@@ -198,6 +221,60 @@ service cloud.firestore {
 
       allow delete: if request.auth != null
         && resource.data.uid == request.auth.uid;
+    }
+
+    // ============================================================
+    // Conversations (1:1 DMs). Doc id is pairId(userA, userB). Create
+    // gated by recipient's dmsFrom privacy + (if "friends") an accepted
+    // friendship. Read/update by either participant.
+    // ============================================================
+    match /conversations/{convId} {
+      allow read: if request.auth != null
+        && (resource.data.userA == request.auth.uid
+            || resource.data.userB == request.auth.uid);
+
+      allow create: if request.auth != null
+        && request.resource.data.userA < request.resource.data.userB
+        && request.resource.data.messageCount == 0
+        && (request.resource.data.userA == request.auth.uid
+            || request.resource.data.userB == request.auth.uid)
+        && (
+          // Self-recipient is nonsense but sender must be a participant;
+          // the recipient is whoever isn't the sender in the pair.
+          (request.resource.data.userA == request.auth.uid
+            && canDmRecipient(request.resource.data.userB))
+          ||
+          (request.resource.data.userB == request.auth.uid
+            && canDmRecipient(request.resource.data.userA))
+        );
+
+      allow update: if request.auth != null
+        && (resource.data.userA == request.auth.uid
+            || resource.data.userB == request.auth.uid);
+
+      allow delete: if false;
+
+      match /messages/{msgId} {
+        allow read: if request.auth != null
+          && (get(/databases/$(database)/documents/conversations/$(convId)).data.userA == request.auth.uid
+              || get(/databases/$(database)/documents/conversations/$(convId)).data.userB == request.auth.uid);
+
+        allow create: if request.auth != null
+          && request.resource.data.authorUid == request.auth.uid
+          && (get(/databases/$(database)/documents/conversations/$(convId)).data.userA == request.auth.uid
+              || get(/databases/$(database)/documents/conversations/$(convId)).data.userB == request.auth.uid);
+
+        allow update, delete: if false;
+      }
+    }
+
+    // ============================================================
+    // Live presence — each user owns /livePresence/{uid}.
+    // Any authed user can read to populate the Live Now widget.
+    // ============================================================
+    match /livePresence/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
     }
 
     // ============================================================

@@ -1,27 +1,130 @@
-import { MOCK_LIVE_NOW, MOCK_LEADERBOARD, MOCK_DMS } from "@/lib/social/mock";
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { MOCK_LEADERBOARD, MOCK_DMS } from "@/lib/social/mock";
+import { useAuthContext } from "@/components/AuthProvider";
+import {
+  getMyPresence,
+  listLiveNowVisibleTo,
+  startLive,
+  stopLive,
+} from "@/lib/sources/livePresence";
+import { blockedUidsFor } from "@/lib/sources/blocks";
+import { aliasColor, aliasInitials } from "@/lib/social/aliases";
+import { LivePresence } from "@/lib/types";
+import { Button } from "@/components/ui/primitives";
 
 export function LiveNowWidget() {
+  const { profile } = useAuthContext();
+  const [others, setOthers] = useState<LivePresence[]>([]);
+  const [mine, setMine] = useState<LivePresence | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const refresh = useCallback(async () => {
+    if (!profile) return;
+    try {
+      const [myPresence, blocked] = await Promise.all([
+        getMyPresence(profile.uid),
+        blockedUidsFor(profile.uid),
+      ]);
+      setMine(myPresence);
+      const live = await listLiveNowVisibleTo(profile.uid, blocked);
+      setOthers(live);
+    } catch {
+      setOthers([]);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    refresh();
+    // Cheap polling — live-now is a weak real-time surface.
+    const t = setInterval(refresh, 45_000);
+    return () => clearInterval(t);
+  }, [refresh]);
+
+  async function toggleLive() {
+    if (!profile || busy) return;
+    setBusy(true);
+    try {
+      if (mine) {
+        await stopLive(profile.uid);
+      } else {
+        await startLive({
+          uid: profile.uid,
+          alias: profile.alias ?? "Skater",
+          aliasColor: profile.aliasColor,
+          spotId: profile.homeSpotId,
+          spotName: profile.homeSpotName,
+        });
+      }
+      await refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const canToggle =
+    !!profile?.alias && profile?.privacy?.socialEnabled !== false;
+
   return (
     <div className="widget">
       <div className="widget-head">
         <span className="ttl">
           <span className="live-dot" style={{ marginRight: 6 }} /> LIVE NOW
         </span>
-        <span className="label">{MOCK_LIVE_NOW.length} SKATING</span>
+        <span className="label">{others.length} SKATING</span>
       </div>
-      <div className="live-rail">
-        {MOCK_LIVE_NOW.map((s) => (
-          <div key={s.id} className="live-skater">
-            <div className="avatar" style={{ background: s.color }}>
-              {s.avatar}
-            </div>
-            <div className="line">
-              <span className="n">{s.name}</span>
-              <span className="s">{s.spot}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+
+      {canToggle && (
+        <div style={{ marginBottom: 12 }}>
+          <Button
+            size="sm"
+            variant={mine ? "coral" : "primary"}
+            onClick={toggleLive}
+            disabled={busy}
+            style={{ width: "100%", justifyContent: "center" }}
+          >
+            {mine
+              ? busy
+                ? "Stopping…"
+                : "Stop live"
+              : busy
+              ? "Going live…"
+              : "I'm skating now →"}
+          </Button>
+        </div>
+      )}
+
+      {others.length === 0 ? (
+        <p className="dim small" style={{ margin: 0 }}>
+          No one else is live right now.
+        </p>
+      ) : (
+        <div className="live-rail">
+          {others.slice(0, 6).map((s) => (
+            <Link
+              key={s.uid}
+              href={`/social`}
+              className="live-skater"
+              style={{ textDecoration: "none" }}
+            >
+              <div
+                className="avatar"
+                style={{
+                  background: s.aliasColor ?? aliasColor(s.alias.toLowerCase()),
+                }}
+              >
+                {aliasInitials(s.alias)}
+              </div>
+              <div className="line">
+                <span className="n">@{s.alias}</span>
+                <span className="s">{s.spotName ?? "SOMEWHERE"}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

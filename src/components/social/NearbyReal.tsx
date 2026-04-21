@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "@/components/AuthProvider";
+import { useRouter } from "next/navigation";
 import { fetchNearby } from "@/lib/sources/publicProfiles";
 import { block } from "@/lib/sources/blocks";
+import { openConversation } from "@/lib/sources/conversations";
 import {
   getFriendship,
   sendFriendRequest,
@@ -107,6 +109,28 @@ export default function NearbyReal() {
     try {
       await block(profile.uid, uid);
       setRows((prev) => prev.filter((r) => r.uid !== uid));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const router = useRouter();
+
+  async function handleDm(target: PublicProfile) {
+    if (!profile || busy) return;
+    setBusy(target.uid);
+    try {
+      const conv = await openConversation(
+        {
+          uid: profile.uid,
+          alias: profile.alias ?? "",
+          aliasColor: profile.aliasColor ?? "#f5d400",
+        },
+        target
+      );
+      router.push(`/dms/${conv.id}`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Couldn't start a DM.");
     } finally {
       setBusy(null);
     }
@@ -249,6 +273,7 @@ export default function NearbyReal() {
               friendship={friendships[p.uid] ?? null}
               onBlock={() => handleBlock(p.uid)}
               onFriendRequest={() => handleFriendRequest(p)}
+              onDm={() => handleDm(p)}
               busy={busy === p.uid}
             />
           ))}
@@ -264,6 +289,7 @@ function NearbyCard({
   friendship,
   onBlock,
   onFriendRequest,
+  onDm,
   busy,
 }: {
   p: NearbyProfile;
@@ -271,6 +297,7 @@ function NearbyCard({
   friendship: Friendship | null;
   onBlock: () => void;
   onFriendRequest: () => void;
+  onDm: () => void;
   busy: boolean;
 }) {
   const tierLabel = TIER_LABELS[p.currentTier] ?? "";
@@ -330,7 +357,7 @@ function NearbyCard({
         <Tag tone="outline">{p.daysAsMember}D</Tag>
         <Tag tone="outline">{p.landedCount} LANDED</Tag>
       </div>
-      <div className="actions">
+      <div className="actions" style={{ flexWrap: "wrap" }}>
         <Button
           size="sm"
           variant={
@@ -342,6 +369,11 @@ function NearbyCard({
         >
           {friendCta.label}
         </Button>
+        {p.privacy.dmsFrom !== "none" && (
+          <Button size="sm" variant="ghost" onClick={onDm} disabled={busy}>
+            Message
+          </Button>
+        )}
         <Button size="sm" variant="ghost" onClick={onBlock} disabled={busy}>
           {busy ? "…" : "Block"}
         </Button>

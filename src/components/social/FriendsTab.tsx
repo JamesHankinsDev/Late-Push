@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/components/AuthProvider";
 import {
   acceptFriendRequest,
@@ -9,9 +10,14 @@ import {
   removeFriend,
 } from "@/lib/sources/friendships";
 import {
+  openConversation,
+  getPublicProfile,
+} from "@/lib/sources/conversations";
+import {
   computeTrustLevel,
   otherAlias,
   otherAliasColor,
+  otherUid,
 } from "@/lib/social/friendship";
 import { Friendship, TrustLevel } from "@/lib/types";
 import { aliasColor, aliasInitials } from "@/lib/social/aliases";
@@ -37,6 +43,7 @@ const TRUST_TONE: Record<TrustLevel, "outline" | "yellow" | "mint"> = {
 
 export default function FriendsTab() {
   const { profile } = useAuthContext();
+  const router = useRouter();
   const [state, setState] = useState<State | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -80,6 +87,32 @@ export default function FriendsTab() {
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't decline.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function onMessage(f: Friendship) {
+    if (!profile || busy) return;
+    setBusy(f.id);
+    try {
+      const targetUid = otherUid(f, profile.uid);
+      const target = await getPublicProfile(targetUid);
+      if (!target) {
+        setError("Couldn't reach that profile.");
+        return;
+      }
+      const conv = await openConversation(
+        {
+          uid: profile.uid,
+          alias: profile.alias ?? "",
+          aliasColor: profile.aliasColor ?? "#f5d400",
+        },
+        target
+      );
+      router.push(`/dms/${conv.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't open DM.");
     } finally {
       setBusy(null);
     }
@@ -182,14 +215,24 @@ export default function FriendsTab() {
                   <Tag tone={TRUST_TONE[trust]}>{TRUST_LABEL[trust]}</Tag>
                 }
                 actions={
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onRemove(f)}
-                    disabled={busy === f.id}
-                  >
-                    {busy === f.id ? "…" : "Remove"}
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => onMessage(f)}
+                      disabled={busy === f.id}
+                    >
+                      Message
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onRemove(f)}
+                      disabled={busy === f.id}
+                    >
+                      Remove
+                    </Button>
+                  </>
                 }
               />
             );
