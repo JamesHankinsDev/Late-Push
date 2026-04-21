@@ -48,6 +48,15 @@ function migrateProfile(raw: Record<string, unknown>): UserProfile {
   }
   data.trickProgress = migratedProgress;
 
+  // Grandfather onboardedAt for legacy profiles that already have real
+  // progress — no reason to force them through the new onboarding flow.
+  if (
+    data.onboardedAt == null &&
+    Object.keys(migratedProgress).length > 0
+  ) {
+    data.onboardedAt = (data.createdAt as string) ?? new Date().toISOString();
+  }
+
   return data as unknown as UserProfile;
 }
 

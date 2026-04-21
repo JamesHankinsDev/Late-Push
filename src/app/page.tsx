@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { user, loading, signIn, signUp, signInWithGoogle } = useAuthContext();
+  const { user, profile, loading, signIn, signUp, signInWithGoogle } =
+    useAuthContext();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,11 +14,15 @@ export default function Home() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const landingRoute = () =>
+    profile && !profile.onboardedAt ? "/onboarding" : "/dashboard";
+
   useEffect(() => {
-    if (!loading && user) {
-      router.push("/dashboard");
+    if (!loading && user && profile) {
+      router.push(landingRoute());
     }
-  }, [user, loading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, profile, loading, router]);
 
   if (loading || user) return null;
 
@@ -31,7 +36,7 @@ export default function Home() {
       } else {
         await signIn(email, password);
       }
-      router.push("/dashboard");
+      // The effect above routes once profile is loaded.
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Authentication failed";
       setError(msg.replace("Firebase: ", "").replace(/\(auth\/.*\)/, "").trim());
@@ -44,7 +49,7 @@ export default function Home() {
     setError("");
     try {
       await signInWithGoogle();
-      router.push("/dashboard");
+      // The effect above routes once profile is loaded.
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Google sign-in failed";
       setError(msg.replace("Firebase: ", "").replace(/\(auth\/.*\)/, "").trim());

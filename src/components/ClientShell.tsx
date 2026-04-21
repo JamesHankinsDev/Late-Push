@@ -1,11 +1,14 @@
 "use client";
 
 import { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { AuthProvider, useAuthContext } from "@/components/AuthProvider";
 import Nav from "@/components/ui/Nav";
 
 function ShellInner({ children }: { children: ReactNode }) {
   const { user, loading } = useAuthContext();
+  const pathname = usePathname();
+  const isFullscreenRoute = pathname === "/onboarding";
 
   if (loading) {
     return (
@@ -36,7 +39,7 @@ function ShellInner({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user) {
+  if (!user || isFullscreenRoute) {
     return <>{children}</>;
   }
 

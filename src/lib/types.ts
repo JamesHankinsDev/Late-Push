@@ -80,6 +80,8 @@ export interface WeatherData {
   skateScore: number; // 0-100
 }
 
+export type Stance = "regular" | "goofy" | "switch" | "unsure";
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -88,6 +90,14 @@ export interface UserProfile {
   currentTier: number;
   trickProgress: Record<string, TrickProgress>;
   badges?: UserBadge[];
+
+  // Onboarding fields — populated by the /onboarding flow, grandfathered
+  // in for legacy profiles with existing trick progress.
+  onboardedAt?: string;
+  stance?: Stance;
+  goals?: string[]; // e.g. ["Ollie", "Cruise comfortably"]
+  vibe?: string[]; // e.g. ["chill", "evenings", "progression"]
+  bio?: string;
 }
 
 export interface SkateSpot {
