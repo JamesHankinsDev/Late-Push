@@ -23,7 +23,8 @@ type CheckState =
   | { kind: "checking" }
   | { kind: "available" }
   | { kind: "taken" }
-  | { kind: "current" };
+  | { kind: "current" }
+  | { kind: "error"; hint: string };
 
 export default function AliasPage() {
   const { profile, refreshProfile } = useAuthContext();
@@ -59,8 +60,14 @@ export default function AliasPage() {
       try {
         const avail = await isAliasAvailable(alias);
         setCheck({ kind: avail ? "available" : "taken" });
-      } catch {
-        setCheck({ kind: "idle" });
+      } catch (err) {
+        // Most common cause: Firestore rules not deployed, so reads on
+        // /aliases/* fall back to default-deny. Surface the reason.
+        const msg =
+          err instanceof Error && err.message.toLowerCase().includes("permission")
+            ? "Can't check availability — Firestore rules may need to be deployed."
+            : "Couldn't check availability. Try again.";
+        setCheck({ kind: "error", hint: msg });
       }
     }, 350);
     return () => clearTimeout(handle);
@@ -282,6 +289,12 @@ function CheckLine({ state }: { state: CheckState }) {
       return (
         <div style={{ ...baseStyle, color: "var(--paper-dim)" }}>
           This is already your alias.
+        </div>
+      );
+    case "error":
+      return (
+        <div style={{ ...baseStyle, color: "var(--coral)" }}>
+          ⚠ {state.hint}
         </div>
       );
   }

@@ -71,8 +71,10 @@ export async function releaseAlias(
 }
 
 /**
- * Atomic alias change: claim the new alias first, then release the old.
- * If the new alias is already owned by this uid, no-ops.
+ * Atomic alias change: claim the new alias and release the old one in a
+ * single transaction. Firestore requires ALL reads to happen before ANY
+ * writes inside a transaction, so we buffer the decisions and only touch
+ * the writes at the end.
  */
 export async function changeAlias(
   uid: string,
@@ -90,26 +92,39 @@ export async function changeAlias(
 
   const db = getFirebaseDb();
   const newRef = doc(db, "aliases", newLower);
+  const oldRef = oldLower ? doc(db, "aliases", oldLower) : null;
 
   await runTransaction(db, async (tx) => {
+    // ---- All reads first ----
     const newSnap = await tx.get(newRef);
+    const oldSnap = oldRef ? await tx.get(oldRef) : null;
+
+    // ---- Validate ----
+    let shouldCreateNew = true;
     if (newSnap.exists()) {
       const data = newSnap.data() as AliasDoc;
-      if (data.uid !== uid) throw new AliasError("TAKEN", "That alias is taken.");
-    } else {
+      if (data.uid !== uid) {
+        throw new AliasError("TAKEN", "That alias is taken.");
+      }
+      // Already ours — no need to rewrite.
+      shouldCreateNew = false;
+    }
+
+    let shouldDeleteOld = false;
+    if (oldRef && oldSnap?.exists()) {
+      const data = oldSnap.data() as AliasDoc;
+      if (data.uid === uid) shouldDeleteOld = true;
+    }
+
+    // ---- Then all writes ----
+    if (shouldCreateNew) {
       tx.set(newRef, {
         uid,
         claimedAt: new Date().toISOString(),
       } satisfies AliasDoc);
     }
-
-    if (oldLower) {
-      const oldRef = doc(db, "aliases", oldLower);
-      const oldSnap = await tx.get(oldRef);
-      if (oldSnap.exists()) {
-        const data = oldSnap.data() as AliasDoc;
-        if (data.uid === uid) tx.delete(oldRef);
-      }
+    if (shouldDeleteOld && oldRef) {
+      tx.delete(oldRef);
     }
   });
 }
