@@ -89,13 +89,7 @@ export default function SessionForm({
         className="card-dark"
         style={{ padding: 18, display: "grid", gap: 14 }}
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 14,
-          }}
-        >
+        <div className="form-row-2">
           <Field label="Date">
             <input
               type="date"

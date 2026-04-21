@@ -230,13 +230,7 @@ export default function NewMeetupPage() {
           >
             When
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 14,
-            }}
-          >
+          <div className="form-row-2">
             <Field label="Date">
               <input
                 type="date"

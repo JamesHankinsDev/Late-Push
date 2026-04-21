@@ -357,7 +357,7 @@ function NearbyCard({
         <Tag tone="outline">{p.daysAsMember}D</Tag>
         <Tag tone="outline">{p.landedCount} LANDED</Tag>
       </div>
-      <div className="actions" style={{ flexWrap: "wrap" }}>
+      <div className="actions" style={{ flexWrap: "wrap", rowGap: 6 }}>
         <Button
           size="sm"
           variant={

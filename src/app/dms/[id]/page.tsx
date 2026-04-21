@@ -354,6 +354,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
       {/* Composer */}
       <form
         onSubmit={handleSubmit}
+        className="dm-composer"
         style={{ display: "flex", gap: 10, alignItems: "flex-end" }}
       >
         <textarea

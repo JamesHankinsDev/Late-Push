@@ -129,13 +129,7 @@ export default function NewCrewPage() {
               style={inputStyle}
             />
           </Field>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 14,
-            }}
-          >
+          <div className="form-row-2">
             <Field label="Tag" hint="2–5 CHARS · A–Z, 0–9">
               <input
                 type="text"

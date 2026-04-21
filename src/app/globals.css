@@ -2858,6 +2858,56 @@ body.type-condensed {
   }
 }
 
+/* ============================================================
+   DM COMPOSER (sticky on mobile, respects safe-area insets so
+   the keyboard doesn't hide it and notched phones don't clip)
+   ============================================================ */
+.dm-composer {
+  position: sticky;
+  bottom: 0;
+  background: var(--ink);
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+  z-index: 5;
+}
+
+@media (max-width: 768px) {
+  .dm-composer {
+    /* When the app shell already gives us 96px bottom padding for the
+       bottom nav, stick the composer ABOVE that so Send stays tappable. */
+    bottom: 80px;
+    padding-bottom: 12px;
+  }
+}
+
+/* ============================================================
+   NARROW PHONES — form grids stack, actions breathe
+   ============================================================ */
+/* Two-column form rows (tag+meetings, date+time, etc.) — desktop
+   default, stacks to 1-col below 420px. */
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 420px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Skater-card actions — already wrap, but tighten gaps */
+  .skater-card .actions {
+    gap: 6px;
+    row-gap: 6px;
+  }
+
+  /* 3-col multi-select (goals/vibe) already drops to 2-col at 768px;
+     drop to 1-col at very narrow. */
+  .multi-select-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
