@@ -9,8 +9,9 @@ import { TIERS, TRICKS } from "@/lib/curriculum";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "TODAY", n: "01" },
   { href: "/tricks", label: "PATH", n: "02" },
-  { href: "/social", label: "SOCIAL", n: "03" },
-  { href: "/profile", label: "PROFILE", n: "04" },
+  { href: "/spots", label: "SPOTS", n: "03" },
+  { href: "/social", label: "SOCIAL", n: "04" },
+  { href: "/profile", label: "PROFILE", n: "05" },
 ];
 
 const TIER_LABELS = [
